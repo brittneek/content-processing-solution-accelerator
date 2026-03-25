@@ -76,6 +76,8 @@ if (-not $ApiReady) {
     Write-Host "  ⚠️  API did not become ready after $MaxRetries attempts. Skipping schema registration."
     Write-Host "  👉 Run manually: cd $FullPath && python register_schema.py $ApiBaseUrl schema_info.json"
 } else {
+    Write-Host "  📦 Installing required Python dependencies..."
+    python -m pip install requests --quiet
     python "$FullPath/register_schema.py" $ApiBaseUrl "$FullPath/schema_info.json"
     Write-Host "  ✅ Schema registration complete."
 }

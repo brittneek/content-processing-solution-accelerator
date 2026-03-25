@@ -80,6 +80,8 @@ if [ "$STATUS" != "200" ]; then
   echo "  ⚠️  API did not become ready after $MAX_RETRIES attempts. Skipping schema registration."
   echo "  👉 Run manually: cd $DATA_SCRIPT_PATH && python register_schema.py $API_BASE_URL schema_info.json"
 else
+  echo "  📦 Installing required Python dependencies..."
+  python -m pip install requests --quiet
   python "$DATA_SCRIPT_PATH/register_schema.py" "$API_BASE_URL" "$DATA_SCRIPT_PATH/schema_info.json"
   echo "  ✅ Schema registration complete."
 fi
