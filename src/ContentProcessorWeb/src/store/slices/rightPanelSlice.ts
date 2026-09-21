@@ -15,12 +15,31 @@ interface FileResponseEntry {
     processId: string;
 }
 
+export interface EvidencePoint {
+    x: number;
+    y: number;
+}
+
+export interface EvidenceRegion {
+    page_number: number;
+    polygon: EvidencePoint[];
+}
+
+export interface SourceEvidenceSelection {
+    entityId: string;
+    entityName: string;
+    status: 'pass' | 'fail' | 'missing' | 'not_applicable' | 'error';
+    pageNumber: number;
+    regions: EvidenceRegion[];
+}
+
 export interface RightPanelState {
     fileHeaders: Record<string, string>;
     rLoader: boolean;
     blobURL: string;
     rError: string | null;
     fileResponse: FileResponseEntry[];
+    selectedEvidence: SourceEvidenceSelection | null;
 }
 
 /** Fetches the original file blob and its HTTP headers for the given process. */
@@ -68,12 +87,20 @@ const initialState: RightPanelState = {
     rLoader: false,
     rError: '',
     fileResponse: [],
+    selectedEvidence: null,
 };
 
 const rightPanelSlice = createSlice({
     name: 'Right Panel',
     initialState,
-    reducers: {},
+    reducers: {
+        setSelectedEvidence: (
+            state,
+            action: PayloadAction<SourceEvidenceSelection | null>
+        ) => {
+            state.selectedEvidence = action.payload;
+        },
+    },
     extraReducers: (builder) => {
         builder
             .addCase(fetchContentFileData.pending, (state) => {
@@ -100,4 +127,5 @@ const rightPanelSlice = createSlice({
     },
 });
 
+export const { setSelectedEvidence } = rightPanelSlice.actions;
 export default rightPanelSlice.reducer;

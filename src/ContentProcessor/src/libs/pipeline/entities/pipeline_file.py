@@ -26,6 +26,7 @@ class ArtifactType(str, Enum):
     ExtractedContent = "extracted_content"
     SchemaMappedData = "schema_mapped_data"
     ScoreMergedData = "score_merged_data"
+    ValidationData = "validation_data"
     SourceContent = "source_content"
     SavedContent = "saved_content"
 

@@ -1,0 +1,585 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GeneratorGlobalSpecification",
+  "description": "Requirements extracted from generator project specification documents. Extract only requirements explicitly supported by the document. Preserve the shortest exact source quotation and its one-based PDF page number for each entity. Use null when a value is not stated.",
+  "type": "object",
+  "properties": {
+    "diesel_engine_type": {
+      "description": "The required engine cycle, cooling method, and fuel type.",
+      "type": "object",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Shortest exact quotation that states the engine type requirement."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "cycles": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "All normalized engine cycles permitted or required by the document, such as four_stroke or two_stroke."
+        },
+        "cooling_methods": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "All normalized engine cooling methods permitted or required by the document, such as water_cooled, liquid_cooled, or air_cooled."
+        },
+        "fuel_types": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "All normalized engine fuel types permitted or required by the document, such as diesel or natural_gas."
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "cycles",
+        "cooling_methods",
+        "fuel_types"
+      ]
+    },
+    "cooling_requirements": {
+      "description": "The required engine cooling-system characteristics and coolant mixture.",
+      "type": "object",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Shortest exact quotation or quotations that state the cooling requirements."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing the primary source_text."
+        },
+        "cooling_system": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Normalized cooling-system type, such as closed_loop_liquid."
+        },
+        "full_load_at_site_conditions": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Whether full-load cooling capability at site conditions is explicitly required."
+        },
+        "water_percent": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Required percentage of water in the coolant mixture."
+        },
+        "glycol_percent": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Required percentage of glycol in the coolant mixture."
+        },
+        "maximum_external_radiator_pressure_drop_in_h2o": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Maximum permitted external radiator pressure drop normalized to inches of water gauge."
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "cooling_system",
+        "full_load_at_site_conditions",
+        "water_percent",
+        "glycol_percent",
+        "maximum_external_radiator_pressure_drop_in_h2o"
+      ]
+    },
+    "lubrication_system": {
+      "description": "The required lubrication pump, oil cooler, and filtration characteristics.",
+      "type": "object",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Shortest exact quotation or quotations that state the lubrication requirements."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing the primary source_text."
+        },
+        "gear_type_pump": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Whether a gear-type oil pump is explicitly required."
+        },
+        "positive_displacement_pump": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Whether a positive-displacement oil pump is explicitly required."
+        },
+        "full_pressure_lubrication": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Whether full-pressure lubrication is explicitly required."
+        },
+        "water_cooled_oil_cooler": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Whether a water-cooled oil cooler is explicitly required."
+        },
+        "particle_removal_efficiency_percent": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Required minimum particle-removal efficiency as a percentage."
+        },
+        "particle_size_micrometers": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Largest particle size covered by the stated removal efficiency, normalized to micrometers."
+        },
+        "full_flow_fail_safe_filtration": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Whether full-flow fail-safe filtration is explicitly required."
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "gear_type_pump",
+        "positive_displacement_pump",
+        "full_pressure_lubrication",
+        "water_cooled_oil_cooler",
+        "particle_removal_efficiency_percent",
+        "particle_size_micrometers",
+        "full_flow_fail_safe_filtration"
+      ]
+    },
+    "maximum_ambient_temperature": {
+      "description": "Maximum ambient temperature requirement for the complete generator system.",
+      "type": "object",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Shortest exact quotation that states the maximum ambient temperature requirement."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "value_celsius": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Maximum ambient temperature normalized to degrees Celsius."
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "value_celsius"
+      ]
+    },
+    "minimum_ambient_temperature": {
+      "description": "Minimum ambient temperature requirement for the complete generator system.",
+      "type": "object",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Shortest exact quotation that states the minimum ambient temperature requirement."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "value_celsius": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Minimum ambient temperature normalized to degrees Celsius."
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "value_celsius"
+      ]
+    },
+    "relative_humidity": {
+      "description": "Relative-humidity operating requirement for the complete generator system.",
+      "type": "object",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Shortest exact quotation that states the relative-humidity requirement."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "minimum_percent_rh": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Minimum relative humidity normalized to percent RH."
+        },
+        "maximum_percent_rh": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Maximum relative humidity normalized to percent RH."
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "minimum_percent_rh",
+        "maximum_percent_rh"
+      ]
+    },
+    "altitude": {
+      "description": "Minimum required altitude capability for the generator system.",
+      "type": "object",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Shortest exact quotation that states the altitude or elevation capability."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "minimum_capability_meters": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Minimum altitude capability normalized to meters above sea level."
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "minimum_capability_meters"
+      ]
+    },
+    "generator_control_ambient_rating": {
+      "description": "Ambient temperature and humidity rating required for generator controls.",
+      "type": "object",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Shortest exact quotation or quotations that state the generator-control ambient rating."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing the primary source_text."
+        },
+        "minimum_temperature_celsius": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "maximum_temperature_celsius": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "maximum_percent_rh": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "non_condensing": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "humidity_condition_minimum_temperature_celsius": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "humidity_condition_maximum_temperature_celsius": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "minimum_temperature_celsius",
+        "maximum_temperature_celsius",
+        "maximum_percent_rh",
+        "non_condensing",
+        "humidity_condition_minimum_temperature_celsius",
+        "humidity_condition_maximum_temperature_celsius"
+      ]
+    },
+    "battery_charger_ambient_rating": {
+      "description": "Ambient temperature and humidity rating required for the battery charger.",
+      "type": "object",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Shortest exact quotation or quotations that state the battery-charger ambient rating."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing the primary source_text."
+        },
+        "minimum_temperature_celsius": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "maximum_temperature_celsius": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "minimum_percent_rh": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "maximum_percent_rh": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "non_condensing": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "minimum_temperature_celsius",
+        "maximum_temperature_celsius",
+        "minimum_percent_rh",
+        "maximum_percent_rh",
+        "non_condensing"
+      ]
+    },
+    "voltage_regulator_ambient_rating": {
+      "description": "Ambient temperature rating required for the voltage regulator.",
+      "type": "object",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Shortest exact quotation that states the voltage-regulator ambient rating."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "minimum_temperature_celsius": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "maximum_temperature_celsius": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "minimum_temperature_celsius",
+        "maximum_temperature_celsius"
+      ]
+    },
+    "engine_governing_control_ambient_rating": {
+      "description": "Ambient temperature and humidity rating required for the engine governing control.",
+      "type": "object",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Shortest exact quotation or quotations that state the engine-governing-control ambient rating."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing the primary source_text."
+        },
+        "minimum_temperature_celsius": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "maximum_temperature_celsius": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "minimum_percent_rh": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "maximum_percent_rh": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "minimum_temperature_celsius",
+        "maximum_temperature_celsius",
+        "minimum_percent_rh",
+        "maximum_percent_rh"
+      ]
+    }
+  },
+  "required": [
+    "diesel_engine_type",
+    "cooling_requirements",
+    "lubrication_system",
+    "maximum_ambient_temperature",
+    "minimum_ambient_temperature",
+    "relative_humidity",
+    "altitude",
+    "generator_control_ambient_rating",
+    "battery_charger_ambient_rating",
+    "voltage_regulator_ambient_rating",
+    "engine_governing_control_ambient_rating"
+  ]
+}

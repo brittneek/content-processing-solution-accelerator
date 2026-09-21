@@ -15,6 +15,14 @@ from app.libs.azure.storage_blob.helper import StorageBlobHelper
 from app.routers.models.schmavault.model import Schema
 
 
+class SchemaNotFoundError(Exception):
+    """Raised when requested schema metadata does not exist."""
+
+
+class SchemaRulesNotFoundError(Exception):
+    """Raised when a schema has no associated validation rules."""
+
+
 class Schemas(BaseModel):
     """CRUD operations for individual schemas, backed by Cosmos DB and Blob Storage."""
 
@@ -44,7 +52,7 @@ class Schemas(BaseModel):
         return [Schema(**schema) for schema in schemas]
 
     def GetFile(self, schema_id: str):
-        """Download the schema `.py` file and return it with content metadata."""
+        """Download the JSON schema file and return it with content metadata."""
         schema_obj = self.mongoHelper.find_document(query={"Id": schema_id})
 
         if not schema_obj:
@@ -58,9 +66,34 @@ class Schemas(BaseModel):
             "FileName": schema_obj.FileName,
         }
 
-    def Add(self, file: UploadFile, schema: Schema) -> Schema:
-        """Upload a schema file to blob storage and insert its metadata."""
+    def GetRulesFile(self, schema_id: str):
+        """Download the validation rules associated with a schema."""
+        schema_obj = self.mongoHelper.find_document(query={"Id": schema_id})
+        if not schema_obj:
+            raise SchemaNotFoundError("Schema not found")
+
+        schema = Schema(**schema_obj[0])
+        if not schema.RulesFileName or not schema.RulesContentType:
+            raise SchemaRulesNotFoundError("Validation rules not found")
+
+        return {
+            "File": self.blobHelper.download_blob(schema.RulesFileName, schema.Id),
+            "ContentType": schema.RulesContentType,
+            "FileName": schema.RulesFileName,
+        }
+
+    def Add(
+        self,
+        file: UploadFile,
+        schema: Schema,
+        rules_file: UploadFile | None = None,
+    ) -> Schema:
+        """Upload a schema and optional rules file, then insert metadata."""
         result = self.blobHelper.upload_blob(schema.FileName, file.file, schema.Id)
+        if rules_file is not None and schema.RulesFileName:
+            self.blobHelper.upload_blob(
+                schema.RulesFileName, rules_file.file, schema.Id
+            )
 
         schema.Created_On = result["date"]
 
@@ -73,8 +106,11 @@ class Schemas(BaseModel):
         schema_id: str,
         class_name: str,
         storage_format: str = "json",
+        rules_file: UploadFile | None = None,
+        rules_file_name: str | None = None,
+        rules_version: str | None = None,
     ) -> Schema:
-        """Replace the schema file in blob storage and update Cosmos metadata."""
+        """Replace a schema and optionally replace its validation rules."""
         schemas = self.mongoHelper.find_document(query={"Id": schema_id})
         if not schemas:
             raise Exception("Schema not found")
@@ -88,6 +124,21 @@ class Schemas(BaseModel):
         schema_object.ContentType = "application/json"
         schema_object.Format = storage_format
         schema_object.Updated_On = result["date"]
+        if rules_file is not None and rules_file_name is not None:
+            previous_rules_file_name = schema_object.RulesFileName
+            self.blobHelper.upload_blob(
+                rules_file_name, rules_file.file, schema_object.Id
+            )
+            if (
+                previous_rules_file_name
+                and previous_rules_file_name != rules_file_name
+            ):
+                self.blobHelper.delete_blob(
+                    previous_rules_file_name, schema_object.Id
+                )
+            schema_object.RulesFileName = rules_file_name
+            schema_object.RulesContentType = "application/yaml"
+            schema_object.RulesVersion = rules_version
 
         self.mongoHelper.update_document(
             schema_object.Id,
@@ -106,8 +157,14 @@ class Schemas(BaseModel):
 
         self.mongoHelper.delete_document(schema_id)
 
-        self.blobHelper.delete_blob_and_cleanup(
-            schema_object.FileName, schema_object.Id
-        )
+        if schema_object.RulesFileName:
+            self.blobHelper.delete_blob(schema_object.FileName, schema_object.Id)
+            self.blobHelper.delete_blob_and_cleanup(
+                schema_object.RulesFileName, schema_object.Id
+            )
+        else:
+            self.blobHelper.delete_blob_and_cleanup(
+                schema_object.FileName, schema_object.Id
+            )
 
         return schema_object

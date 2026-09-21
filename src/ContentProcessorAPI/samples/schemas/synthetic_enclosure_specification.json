@@ -1,0 +1,3532 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "AcousticOption": {
+      "properties": {
+        "option_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Option identifier exactly as stated.",
+          "title": "Option Id"
+        },
+        "maximum_sound_pressure_dba": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Offered sound pressure limit in dBA.",
+          "title": "Maximum Sound Pressure Dba"
+        },
+        "measurement_distance_m": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Measurement distance in metres.",
+          "title": "Measurement Distance M"
+        },
+        "selected": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "True only when selected, false when explicitly unselected; null when selection is not stated.",
+          "title": "Selected"
+        }
+      },
+      "required": [
+        "option_id",
+        "maximum_sound_pressure_dba",
+        "measurement_distance_m",
+        "selected"
+      ],
+      "title": "AcousticOption",
+      "type": "object"
+    },
+    "AcousticPerformance": {
+      "description": "Extracted sound limit and quoted options requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "base_maximum_sound_pressure_dba": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Selected base sound pressure in dBA; not an option value.",
+          "title": "Base Maximum Sound Pressure Dba"
+        },
+        "measurement_distance_m": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Distance from enclosure wall in metres.",
+          "title": "Measurement Distance M"
+        },
+        "operating_generator_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Number of generators operating during acoustic measurement.",
+          "title": "Operating Generator Count"
+        },
+        "test_load_percent": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Load during sound test, as percent of rated load.",
+          "title": "Test Load Percent"
+        },
+        "quoted_options": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/AcousticOption"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "List quoted acoustic options separately; never substitute an unselected offer for the base limit.",
+          "title": "Quoted Options"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "base_maximum_sound_pressure_dba",
+        "measurement_distance_m",
+        "operating_generator_count",
+        "test_load_percent",
+        "quoted_options"
+      ],
+      "title": "AcousticPerformance",
+      "type": "object"
+    },
+    "AuxiliaryDistribution": {
+      "description": "Extracted auxiliary electrical supply requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "panelboard_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Number of auxiliary panelboards.",
+          "title": "Panelboard Count"
+        },
+        "line_to_line_voltage_v": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Line-to-line supply voltage, not line-to-neutral.",
+          "title": "Line To Line Voltage V"
+        },
+        "line_to_neutral_voltage_v": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Line-to-neutral supply voltage.",
+          "title": "Line To Neutral Voltage V"
+        },
+        "phase_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Phase count.",
+          "title": "Phase Count"
+        },
+        "wire_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Wire count as stated.",
+          "title": "Wire Count"
+        },
+        "short_circuit_rating_ka": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Explicit short-circuit rating in kA.",
+          "title": "Short Circuit Rating Ka"
+        },
+        "minimum_poles": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Minimum panelboard pole count.",
+          "title": "Minimum Poles"
+        },
+        "spare_breaker_space_percent": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Spare panelboard breaker space in percent.",
+          "title": "Spare Breaker Space Percent"
+        },
+        "spare_cable_transit_percent": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Spare control cable-transit capacity in percent.",
+          "title": "Spare Cable Transit Percent"
+        },
+        "connection_box_ip_rating": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "External connection-box ingress rating.",
+          "title": "Connection Box Ip Rating"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "panelboard_count",
+        "line_to_line_voltage_v",
+        "line_to_neutral_voltage_v",
+        "phase_count",
+        "wire_count",
+        "short_circuit_rating_ka",
+        "minimum_poles",
+        "spare_breaker_space_percent",
+        "spare_cable_transit_percent",
+        "connection_box_ip_rating"
+      ],
+      "title": "AuxiliaryDistribution",
+      "type": "object"
+    },
+    "ColdWeatherOption": {
+      "description": "Extracted selected winter option requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "option_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Winter option identifier.",
+          "title": "Option Id"
+        },
+        "selected": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether this option is explicitly selected.",
+          "title": "Selected"
+        },
+        "motorized_intake_dampers": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether option includes motorized intake dampers.",
+          "title": "Motorized Intake Dampers"
+        },
+        "maintained_internal_temperature_c": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Heated enclosure target in C.",
+          "title": "Maintained Internal Temperature C"
+        },
+        "design_outdoor_temperature_c": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Outdoor design temperature for heating, in C.",
+          "title": "Design Outdoor Temperature C"
+        },
+        "dampers_closed_condition": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether heating performance assumes closed dampers.",
+          "title": "Dampers Closed Condition"
+        },
+        "heater_supply_v_ac": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Heater AC supply voltage.",
+          "title": "Heater Supply V Ac"
+        },
+        "heater_phase_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Electrical phase count.",
+          "title": "Heater Phase Count"
+        },
+        "heater_power_kw": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Heater power rating in kW; do not infer from temperatures.",
+          "title": "Heater Power Kw"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "option_id",
+        "selected",
+        "motorized_intake_dampers",
+        "maintained_internal_temperature_c",
+        "design_outdoor_temperature_c",
+        "dampers_closed_condition",
+        "heater_supply_v_ac",
+        "heater_phase_count",
+        "heater_power_kw"
+      ],
+      "title": "ColdWeatherOption",
+      "type": "object"
+    },
+    "DeliveryAndInstallation": {
+      "description": "Extracted transport and positioning requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "written_dispatch_release": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether written authorization is required before dispatch.",
+          "title": "Written Dispatch Release"
+        },
+        "delivery_notice_hours": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Minimum delivery notice in hours.",
+          "title": "Delivery Notice Hours"
+        },
+        "storage_protection_months": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Specified moisture protection period in months.",
+          "title": "Storage Protection Months"
+        },
+        "module_identification": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether disassembled modules must be identified.",
+          "title": "Module Identification"
+        },
+        "drained_support_slab": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether slab drainage is required.",
+          "title": "Drained Support Slab"
+        },
+        "slab_slope_percent": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Explicit slab slope in percent; null when unspecified.",
+          "title": "Slab Slope Percent"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "written_dispatch_release",
+        "delivery_notice_hours",
+        "storage_protection_months",
+        "module_identification",
+        "drained_support_slab",
+        "slab_slope_percent"
+      ],
+      "title": "DeliveryAndInstallation",
+      "type": "object"
+    },
+    "DischargePlenum": {
+      "description": "Extracted discharge and exhaust support requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "height_m": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Explicit selected plenum height in metres.",
+          "title": "Height M"
+        },
+        "independent_support": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether plenum support is independent of enclosure.",
+          "title": "Independent Support"
+        },
+        "discharge_direction": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Normalized air discharge direction.",
+          "title": "Discharge Direction"
+        },
+        "drainage": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether positive drainage is required.",
+          "title": "Drainage"
+        },
+        "access_width_mm": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Plenum access width normalized to mm.",
+          "title": "Access Width Mm"
+        },
+        "access_height_mm": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Plenum access height normalized to mm.",
+          "title": "Access Height Mm"
+        },
+        "structural_pressure_magnitude_pa": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Structural pressure magnitude, not allowable airflow loss.",
+          "title": "Structural Pressure Magnitude Pa"
+        },
+        "positive_and_negative_pressure": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether both pressure signs are specified.",
+          "title": "Positive And Negative Pressure"
+        },
+        "deflection_span_divisor": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Divisor in span/N deflection limit.",
+          "title": "Deflection Span Divisor"
+        },
+        "leak_test_operating_pressure_percent": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Leak-test pressure as percent of operating static pressure.",
+          "title": "Leak Test Operating Pressure Percent"
+        },
+        "exhaust_pipe_supports": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether exhaust-pipe supports are required.",
+          "title": "Exhaust Pipe Supports"
+        },
+        "rain_protected_silencer_mounting": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether silencer mounting needs rain protection.",
+          "title": "Rain Protected Silencer Mounting"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "height_m",
+        "independent_support",
+        "discharge_direction",
+        "drainage",
+        "access_width_mm",
+        "access_height_mm",
+        "structural_pressure_magnitude_pa",
+        "positive_and_negative_pressure",
+        "deflection_span_divisor",
+        "leak_test_operating_pressure_percent",
+        "exhaust_pipe_supports",
+        "rain_protected_silencer_mounting"
+      ],
+      "title": "DischargePlenum",
+      "type": "object"
+    },
+    "EnclosureCommunications": {
+      "description": "Extracted monitoring interfaces requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "source_protocol": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Gateway input protocol.",
+          "title": "Source Protocol"
+        },
+        "destination_protocol": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Gateway output protocol.",
+          "title": "Destination Protocol"
+        },
+        "ethernet_surge_protection": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether Ethernet surge protection is required.",
+          "title": "Ethernet Surge Protection"
+        },
+        "hardwired_points": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Normalized required hardwired signal names.",
+          "title": "Hardwired Points"
+        },
+        "network_address": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Assigned network address only; null if unassigned.",
+          "title": "Network Address"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "source_protocol",
+        "destination_protocol",
+        "ethernet_surge_protection",
+        "hardwired_points",
+        "network_address"
+      ],
+      "title": "EnclosureCommunications",
+      "type": "object"
+    },
+    "EnclosureConstruction": {
+      "description": "Extracted package configuration requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "enclosure_quantity": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Number of complete enclosures.",
+          "title": "Enclosure Quantity"
+        },
+        "generators_per_enclosure": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Generator count inside each enclosure.",
+          "title": "Generators Per Enclosure"
+        },
+        "outdoor": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether outdoor use is required.",
+          "title": "Outdoor"
+        },
+        "walk_in": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether personnel can enter the enclosure.",
+          "title": "Walk In"
+        },
+        "weatherproof": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether weather resistance is required.",
+          "title": "Weatherproof"
+        },
+        "sound_attenuated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether sound attenuation is required.",
+          "title": "Sound Attenuated"
+        },
+        "wall_material": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Normalized wall material, not frame material.",
+          "title": "Wall Material"
+        },
+        "underframe_material": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Normalized underframe material.",
+          "title": "Underframe Material"
+        },
+        "slip_resistant_floor": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether slip-resistant flooring is required.",
+          "title": "Slip Resistant Floor"
+        },
+        "pest_barriers": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether pest exclusion is required.",
+          "title": "Pest Barriers"
+        },
+        "removable_service_panel": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether a removable equipment service panel is required.",
+          "title": "Removable Service Panel"
+        },
+        "independent_radiator_removal": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether radiator removal without engine removal is required.",
+          "title": "Independent Radiator Removal"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "enclosure_quantity",
+        "generators_per_enclosure",
+        "outdoor",
+        "walk_in",
+        "weatherproof",
+        "sound_attenuated",
+        "wall_material",
+        "underframe_material",
+        "slip_resistant_floor",
+        "pest_barriers",
+        "removable_service_panel",
+        "independent_radiator_removal"
+      ],
+      "title": "EnclosureConstruction",
+      "type": "object"
+    },
+    "EnclosureDocumentMetadata": {
+      "description": "Extracted test identification requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "document_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Printed document identifier.",
+          "title": "Document Id"
+        },
+        "revision": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Printed revision.",
+          "title": "Revision"
+        },
+        "document_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Date normalized to YYYY-MM-DD.",
+          "title": "Document Date"
+        },
+        "enclosure_tag": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Enclosure equipment tag.",
+          "title": "Enclosure Tag"
+        },
+        "customer_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Customer name; null when not stated.",
+          "title": "Customer Name"
+        },
+        "site_location": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Physical project location; null when unassigned.",
+          "title": "Site Location"
+        },
+        "manufacturer_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Named enclosure manufacturer; do not infer one.",
+          "title": "Manufacturer Name"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "document_id",
+        "revision",
+        "document_date",
+        "enclosure_tag",
+        "customer_name",
+        "site_location",
+        "manufacturer_name"
+      ],
+      "title": "EnclosureDocumentMetadata",
+      "type": "object"
+    },
+    "FinishAndLifting": {
+      "description": "Extracted finish and handling requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "finish_description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Stated finish description.",
+          "title": "Finish Description"
+        },
+        "colour_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Explicit colour-system code; null when unassigned.",
+          "title": "Colour Code"
+        },
+        "coating_durability_years": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Declared coating durability target in years.",
+          "title": "Coating Durability Years"
+        },
+        "lifting_point_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Number of rated lifting points.",
+          "title": "Lifting Point Count"
+        },
+        "base_rail_height_mm": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Support rail height in mm.",
+          "title": "Base Rail Height Mm"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "finish_description",
+        "colour_code",
+        "coating_durability_years",
+        "lifting_point_count",
+        "base_rail_height_mm"
+      ],
+      "title": "FinishAndLifting",
+      "type": "object"
+    },
+    "FireAndEmergencySafety": {
+      "description": "Extracted alarm and shutdown devices requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "fire_alarm_devices": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Normalized required alarm-device types; do not invent quantities.",
+          "title": "Fire Alarm Devices"
+        },
+        "emergency_stop_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Number of independent emergency stop stations.",
+          "title": "Emergency Stop Count"
+        },
+        "weather_protected_stops": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether stop stations need weather protection.",
+          "title": "Weather Protected Stops"
+        },
+        "hardwired_shutdown": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether stop stations are wired into shutdown circuit.",
+          "title": "Hardwired Shutdown"
+        },
+        "battery_rack_guard": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether battery rack guarding is required.",
+          "title": "Battery Rack Guard"
+        },
+        "floor_battery_cable_protection": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether exposed floor-level battery cables are protected.",
+          "title": "Floor Battery Cable Protection"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "fire_alarm_devices",
+        "emergency_stop_count",
+        "weather_protected_stops",
+        "hardwired_shutdown",
+        "battery_rack_guard",
+        "floor_battery_cable_protection"
+      ],
+      "title": "FireAndEmergencySafety",
+      "type": "object"
+    },
+    "FireSeparation": {
+      "description": "Extracted conditional wall rating requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "separation_threshold_m": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Threshold distance in metres.",
+          "title": "Separation Threshold M"
+        },
+        "threshold_comparison": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Normalize threshold comparison; retain inclusive boundary.",
+          "title": "Threshold Comparison"
+        },
+        "rating_at_or_above_threshold_minutes": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Wall rating for separation meeting threshold.",
+          "title": "Rating At Or Above Threshold Minutes"
+        },
+        "rating_below_threshold_minutes": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Wall rating for smaller separation.",
+          "title": "Rating Below Threshold Minutes"
+        },
+        "layout_separation_m": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Separation explicitly stated for this layout.",
+          "title": "Layout Separation M"
+        },
+        "selected_wall_rating_minutes": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Explicitly selected wall rating; do not derive if absent.",
+          "title": "Selected Wall Rating Minutes"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "separation_threshold_m",
+        "threshold_comparison",
+        "rating_at_or_above_threshold_minutes",
+        "rating_below_threshold_minutes",
+        "layout_separation_m",
+        "selected_wall_rating_minutes"
+      ],
+      "title": "FireSeparation",
+      "type": "object"
+    },
+    "FuelFill": {
+      "description": "Extracted local filling equipment requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "fill_arrangement": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Normalized selected fill arrangement.",
+          "title": "Fill Arrangement"
+        },
+        "coupling_diameter_mm": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Fill coupling diameter in mm.",
+          "title": "Coupling Diameter Mm"
+        },
+        "tanker_bonding": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether tanker electrical bonding is required.",
+          "title": "Tanker Bonding"
+        },
+        "strainer_micrometers": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Fill-line strainer size in micrometres; not polisher rating.",
+          "title": "Strainer Micrometers"
+        },
+        "local_display": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether local fill display is required.",
+          "title": "Local Display"
+        },
+        "audible_visual_alarm": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether audible and visual fill alarms are required.",
+          "title": "Audible Visual Alarm"
+        },
+        "motorized_shutoff": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether motorized shutoff is included.",
+          "title": "Motorized Shutoff"
+        },
+        "mechanical_overfill_valve": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether separate mechanical overfill protection is included.",
+          "title": "Mechanical Overfill Valve"
+        },
+        "maximum_fill_litres_per_minute": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Maximum fill flow normalized to litres per minute.",
+          "title": "Maximum Fill Litres Per Minute"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "fill_arrangement",
+        "coupling_diameter_mm",
+        "tanker_bonding",
+        "strainer_micrometers",
+        "local_display",
+        "audible_visual_alarm",
+        "motorized_shutoff",
+        "mechanical_overfill_valve",
+        "maximum_fill_litres_per_minute"
+      ],
+      "title": "FuelFill",
+      "type": "object"
+    },
+    "FuelMonitoring": {
+      "description": "Extracted level and leak signals requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "level_accuracy_percentage_points": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Absolute level accuracy magnitude in percentage points.",
+          "title": "Level Accuracy Percentage Points"
+        },
+        "low_alarm_percent": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Low-level alarm setpoint.",
+          "title": "Low Alarm Percent"
+        },
+        "low_low_alarm_percent": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Low-low setpoint only if stated; do not duplicate low alarm.",
+          "title": "Low Low Alarm Percent"
+        },
+        "high_alarm_percent": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "High-level alarm setpoint.",
+          "title": "High Alarm Percent"
+        },
+        "high_high_alarm_percent": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "High-high alarm setpoint.",
+          "title": "High High Alarm Percent"
+        },
+        "high_high_closes_fill_valve": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether high-high signal closes fill valve.",
+          "title": "High High Closes Fill Valve"
+        },
+        "distinguishes_water_and_fuel": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether leak sensing distinguishes fuel from water.",
+          "title": "Distinguishes Water And Fuel"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "level_accuracy_percentage_points",
+        "low_alarm_percent",
+        "low_low_alarm_percent",
+        "high_alarm_percent",
+        "high_high_alarm_percent",
+        "high_high_closes_fill_valve",
+        "distinguishes_water_and_fuel"
+      ],
+      "title": "FuelMonitoring",
+      "type": "object"
+    },
+    "FuelPolishingOption": {
+      "description": "Extracted unselected polishing offer requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "option_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Quoted polishing option identifier.",
+          "title": "Option Id"
+        },
+        "selected": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Explicit option selection state.",
+          "title": "Selected"
+        },
+        "offered_filter_micrometers": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Quoted option rating, not an installed filter rating.",
+          "title": "Offered Filter Micrometers"
+        },
+        "installed_polisher_required": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether current scope requires an installed polisher.",
+          "title": "Installed Polisher Required"
+        },
+        "future_space_required": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether base scope reserves future mounting space.",
+          "title": "Future Space Required"
+        },
+        "future_connections_required": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether base scope includes future pipe connections.",
+          "title": "Future Connections Required"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "option_id",
+        "selected",
+        "offered_filter_micrometers",
+        "installed_polisher_required",
+        "future_space_required",
+        "future_connections_required"
+      ],
+      "title": "FuelPolishingOption",
+      "type": "object"
+    },
+    "FuelTank": {
+      "description": "Extracted selected tank arrangement requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "sub_base_tank_selected": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether sub-base tank is selected.",
+          "title": "Sub Base Tank Selected"
+        },
+        "double_wall": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether double-wall construction is required.",
+          "title": "Double Wall"
+        },
+        "runtime_hours": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Specified runtime in hours.",
+          "title": "Runtime Hours"
+        },
+        "runtime_load_percent": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Load basis for runtime in percent.",
+          "title": "Runtime Load Percent"
+        },
+        "containment_percent": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Outer containment as percent of inner tank volume.",
+          "title": "Containment Percent"
+        },
+        "normal_vent": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether normal venting is required.",
+          "title": "Normal Vent"
+        },
+        "emergency_vent": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether emergency venting is required.",
+          "title": "Emergency Vent"
+        },
+        "interstitial_leak_detection": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether interstitial monitoring is required.",
+          "title": "Interstitial Leak Detection"
+        },
+        "rated_capacity_litres": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Explicit rated volume only; never calculate from runtime alone.",
+          "title": "Rated Capacity Litres"
+        },
+        "central_header_selected": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether central fuel header alternative is selected.",
+          "title": "Central Header Selected"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "sub_base_tank_selected",
+        "double_wall",
+        "runtime_hours",
+        "runtime_load_percent",
+        "containment_percent",
+        "normal_vent",
+        "emergency_vent",
+        "interstitial_leak_detection",
+        "rated_capacity_litres",
+        "central_header_selected"
+      ],
+      "title": "FuelTank",
+      "type": "object"
+    },
+    "LightingAndOutlets": {
+      "description": "Extracted lighting and convenience power requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "lighting_technology": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Stated lighting technology.",
+          "title": "Lighting Technology"
+        },
+        "interior_illuminance_lux": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Interior illuminance in lux.",
+          "title": "Interior Illuminance Lux"
+        },
+        "emergency_duration_minutes": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Emergency-light duration normalized to minutes.",
+          "title": "Emergency Duration Minutes"
+        },
+        "dedicated_lighting_battery": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether a dedicated lighting battery is required.",
+          "title": "Dedicated Lighting Battery"
+        },
+        "starting_battery_backup_allowed": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "True if allowed; false if explicitly prohibited.",
+          "title": "Starting Battery Backup Allowed"
+        },
+        "exterior_luminaire_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exterior fixture count.",
+          "title": "Exterior Luminaire Count"
+        },
+        "twin_socket_outlet_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Twin outlet assemblies, not individual sockets.",
+          "title": "Twin Socket Outlet Count"
+        },
+        "residual_current_protection": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether outlet residual-current protection is required.",
+          "title": "Residual Current Protection"
+        },
+        "illuminated_exit_signs": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether illuminated exit signs are required.",
+          "title": "Illuminated Exit Signs"
+        },
+        "automatic_emergency_light_test": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether automatic lighting testing is required.",
+          "title": "Automatic Emergency Light Test"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "lighting_technology",
+        "interior_illuminance_lux",
+        "emergency_duration_minutes",
+        "dedicated_lighting_battery",
+        "starting_battery_backup_allowed",
+        "exterior_luminaire_count",
+        "twin_socket_outlet_count",
+        "residual_current_protection",
+        "illuminated_exit_signs",
+        "automatic_emergency_light_test"
+      ],
+      "title": "LightingAndOutlets",
+      "type": "object"
+    },
+    "MaintenanceClearances": {
+      "description": "Extracted working spaces requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "side_walkway_mm": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Side walkway width normalized to mm.",
+          "title": "Side Walkway Mm"
+        },
+        "rear_aisle_mm": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Rear service aisle width normalized to mm.",
+          "title": "Rear Aisle Mm"
+        },
+        "electrical_working_space_mm": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Electrical working clearance normalized to mm.",
+          "title": "Electrical Working Space Mm"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "side_walkway_mm",
+        "rear_aisle_mm",
+        "electrical_working_space_mm"
+      ],
+      "title": "MaintenanceClearances",
+      "type": "object"
+    },
+    "PersonnelAccess": {
+      "description": "Extracted doors and maintenance access requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "door_opening_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Door openings, not individual leaves.",
+          "title": "Door Opening Count"
+        },
+        "double_leaf_opening_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Count of double-leaf openings.",
+          "title": "Double Leaf Opening Count"
+        },
+        "panic_release": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether internal panic-release hardware is required.",
+          "title": "Panic Release"
+        },
+        "door_windows": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether door viewing windows are required.",
+          "title": "Door Windows"
+        },
+        "roof_access_ladder": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether fixed roof access is required.",
+          "title": "Roof Access Ladder"
+        },
+        "guarded_platform": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether guarded maintenance access is required.",
+          "title": "Guarded Platform"
+        },
+        "extinguisher_mounts": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether enclosure scope includes extinguisher mounts.",
+          "title": "Extinguisher Mounts"
+        },
+        "extinguisher_supplier_role": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Role supplying extinguishers; not the mounting brackets.",
+          "title": "Extinguisher Supplier Role"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "door_opening_count",
+        "double_leaf_opening_count",
+        "panic_release",
+        "door_windows",
+        "roof_access_ladder",
+        "guarded_platform",
+        "extinguisher_mounts",
+        "extinguisher_supplier_role"
+      ],
+      "title": "PersonnelAccess",
+      "type": "object"
+    },
+    "StructuralDesign": {
+      "description": "Extracted structural test envelope requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "basic_wind_speed_m_per_s": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Basic wind speed in m/s; not the gust speed.",
+          "title": "Basic Wind Speed M Per S"
+        },
+        "three_second_gust_m_per_s": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Three-second gust speed in m/s.",
+          "title": "Three Second Gust M Per S"
+        },
+        "wind_multiplier": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Dimensionless wind design multiplier.",
+          "title": "Wind Multiplier"
+        },
+        "roof_snow_load_kn_per_m2": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Roof snow load in kN/m2.",
+          "title": "Roof Snow Load Kn Per M2"
+        },
+        "ground_acceleration_g": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Ground acceleration as a multiple of g.",
+          "title": "Ground Acceleration G"
+        },
+        "seismic_importance_factor": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Dimensionless seismic importance factor.",
+          "title": "Seismic Importance Factor"
+        },
+        "rain_test_mm_per_hour": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Rain-test intensity in mm/hour.",
+          "title": "Rain Test Mm Per Hour"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "basic_wind_speed_m_per_s",
+        "three_second_gust_m_per_s",
+        "wind_multiplier",
+        "roof_snow_load_kn_per_m2",
+        "ground_acceleration_g",
+        "seismic_importance_factor",
+        "rain_test_mm_per_hour"
+      ],
+      "title": "StructuralDesign",
+      "type": "object"
+    },
+    "SubmittalsAndHandover": {
+      "description": "Extracted engineering deliverables requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "response_codes": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Response labels exactly as printed; these are submission instructions, not this extractor's compliance grades.",
+          "title": "Response Codes"
+        },
+        "approval_deliverables": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Normalized approval deliverable categories.",
+          "title": "Approval Deliverables"
+        },
+        "searchable_pdf_manuals": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether searchable PDF manuals are required.",
+          "title": "Searchable Pdf Manuals"
+        },
+        "editable_drawings": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether editable drawings are required.",
+          "title": "Editable Drawings"
+        },
+        "calibration_records": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether handover includes calibration records.",
+          "title": "Calibration Records"
+        },
+        "spare_parts_list": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether handover includes a spare-parts list.",
+          "title": "Spare Parts List"
+        },
+        "training_hours": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Operator training duration in hours.",
+          "title": "Training Hours"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "response_codes",
+        "approval_deliverables",
+        "searchable_pdf_manuals",
+        "editable_drawings",
+        "calibration_records",
+        "spare_parts_list",
+        "training_hours"
+      ],
+      "title": "SubmittalsAndHandover",
+      "type": "object"
+    },
+    "TestingAndCommissioning": {
+      "description": "Extracted acceptance demonstrations requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "factory_witness_required": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether factory/integrator witnessing is required.",
+          "title": "Factory Witness Required"
+        },
+        "factory_checks": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Normalized factory demonstration categories.",
+          "title": "Factory Checks"
+        },
+        "witness_notice_calendar_days": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Calendar days of witness notice.",
+          "title": "Witness Notice Calendar Days"
+        },
+        "site_interface_checks": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether site interface checks are required.",
+          "title": "Site Interface Checks"
+        },
+        "calibration_accuracy_percent_full_scale": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Calibration accuracy magnitude as percent of full scale; not fuel level accuracy in percentage points.",
+          "title": "Calibration Accuracy Percent Full Scale"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "factory_witness_required",
+        "factory_checks",
+        "witness_notice_calendar_days",
+        "site_interface_checks",
+        "calibration_accuracy_percent_full_scale"
+      ],
+      "title": "TestingAndCommissioning",
+      "type": "object"
+    },
+    "ThermalInsulation": {
+      "description": "Extracted envelope heat transmission requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "limit_direction": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether stated U-values are maximum or minimum limits.",
+          "title": "Limit Direction"
+        },
+        "wall_u_value_w_per_m2k": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Wall U-value in W/m2K.",
+          "title": "Wall U Value W Per M2K"
+        },
+        "roof_u_value_w_per_m2k": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Roof U-value in W/m2K.",
+          "title": "Roof U Value W Per M2K"
+        },
+        "floor_u_value_w_per_m2k": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exposed-floor U-value in W/m2K.",
+          "title": "Floor U Value W Per M2K"
+        },
+        "door_u_value_w_per_m2k": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Door U-value in W/m2K.",
+          "title": "Door U Value W Per M2K"
+        },
+        "window_u_value_w_per_m2k": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Window U-value in W/m2K; null if omitted.",
+          "title": "Window U Value W Per M2K"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "limit_direction",
+        "wall_u_value_w_per_m2k",
+        "roof_u_value_w_per_m2k",
+        "floor_u_value_w_per_m2k",
+        "door_u_value_w_per_m2k",
+        "window_u_value_w_per_m2k"
+      ],
+      "title": "ThermalInsulation",
+      "type": "object"
+    },
+    "VentilationAndLouvers": {
+      "description": "Extracted airflow management requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "louver_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Normalized intake louver type.",
+          "title": "Louver Type"
+        },
+        "louver_material": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Louver construction material.",
+          "title": "Louver Material"
+        },
+        "frame_thickness_mm": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Louver frame thickness in mm.",
+          "title": "Frame Thickness Mm"
+        },
+        "blade_thickness_mm": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Louver blade thickness in mm.",
+          "title": "Blade Thickness Mm"
+        },
+        "blade_depth_mm": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Louver blade depth in mm.",
+          "title": "Blade Depth Mm"
+        },
+        "bird_screen_mesh_mm": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Bird screen mesh dimension in mm.",
+          "title": "Bird Screen Mesh Mm"
+        },
+        "radiator_gasket_mm": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Radiator interface gasket dimension in mm.",
+          "title": "Radiator Gasket Mm"
+        },
+        "thermostatic_fan": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether thermostatic enclosure ventilation is required.",
+          "title": "Thermostatic Fan"
+        },
+        "maximum_internal_temperature_c": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Enclosure internal ambient limit, not outdoor ambient.",
+          "title": "Maximum Internal Temperature C"
+        },
+        "allowable_airflow_pressure_drop_pa": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Airflow pressure-drop limit in Pa, if stated. Do not use the plenum structural pressure rating.",
+          "title": "Allowable Airflow Pressure Drop Pa"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "louver_type",
+        "louver_material",
+        "frame_thickness_mm",
+        "blade_thickness_mm",
+        "blade_depth_mm",
+        "bird_screen_mesh_mm",
+        "radiator_gasket_mm",
+        "thermostatic_fan",
+        "maximum_internal_temperature_c",
+        "allowable_airflow_pressure_drop_pa"
+      ],
+      "title": "VentilationAndLouvers",
+      "type": "object"
+    },
+    "WarrantyAndService": {
+      "description": "Extracted support obligations requirements.",
+      "properties": {
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact quotation supporting this section. Retain original units, conditions, and option-selection wording; no paraphrase.",
+          "title": "Source Text"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "One-based physical PDF page containing the primary quotation; null if unavailable. Not the section or clause number.",
+          "title": "Source Page"
+        },
+        "base_warranty_months": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Selected base warranty in months, not offered extension.",
+          "title": "Base Warranty Months"
+        },
+        "warranty_start_event": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Normalized warranty commencement event.",
+          "title": "Warranty Start Event"
+        },
+        "defect_correction_calendar_days": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Calendar-day correction period.",
+          "title": "Defect Correction Calendar Days"
+        },
+        "extension_option_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Warranty option identifier.",
+          "title": "Extension Option Id"
+        },
+        "offered_extension_total_months": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Quoted total extended warranty term, not months added.",
+          "title": "Offered Extension Total Months"
+        },
+        "extension_selected": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether warranty extension is selected.",
+          "title": "Extension Selected"
+        },
+        "maintenance_agreement_offer": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether post-warranty maintenance must be offered.",
+          "title": "Maintenance Agreement Offer"
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "base_warranty_months",
+        "warranty_start_event",
+        "defect_correction_calendar_days",
+        "extension_option_id",
+        "offered_extension_total_months",
+        "extension_selected",
+        "maintenance_agreement_offer"
+      ],
+      "title": "WarrantyAndService",
+      "type": "object"
+    }
+  },
+  "description": "Extract enclosure specification requirements, not vendor compliance grades. Use only the submitted document. Keep physical components, base scope, selected alternates, and unselected offers distinct. All properties are required but nullable. Do not infer missing requirements or use external baselines. Preserve exact evidence and one-based physical PDF page numbers. Normalize units only as requested. Do not interpret absence as false.",
+  "properties": {
+    "document_metadata": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EnclosureDocumentMetadata"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract test identification. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    },
+    "enclosure_construction": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EnclosureConstruction"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract package configuration. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    },
+    "structural_design": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/StructuralDesign"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract structural test envelope. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    },
+    "finish_and_lifting": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FinishAndLifting"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract finish and handling. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    },
+    "fire_separation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FireSeparation"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract conditional wall rating. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    },
+    "acoustic_performance": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AcousticPerformance"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract sound limit and quoted options. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    },
+    "personnel_access": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PersonnelAccess"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract doors and maintenance access. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    },
+    "maintenance_clearances": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/MaintenanceClearances"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract working spaces. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    },
+    "ventilation_and_louvers": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/VentilationAndLouvers"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract airflow management. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    },
+    "thermal_insulation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ThermalInsulation"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract envelope heat transmission. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    },
+    "cold_weather_option": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ColdWeatherOption"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract selected winter option. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    },
+    "discharge_plenum": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DischargePlenum"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract discharge and exhaust support. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    },
+    "fuel_tank": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FuelTank"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract selected tank arrangement. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    },
+    "fuel_fill": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FuelFill"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract local filling equipment. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    },
+    "fuel_monitoring": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FuelMonitoring"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract level and leak signals. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    },
+    "fuel_polishing_option": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FuelPolishingOption"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract unselected polishing offer. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    },
+    "auxiliary_distribution": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AuxiliaryDistribution"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract auxiliary electrical supply. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    },
+    "lighting_and_outlets": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/LightingAndOutlets"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract lighting and convenience power. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    },
+    "fire_and_emergency_safety": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FireAndEmergencySafety"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract alarm and shutdown devices. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    },
+    "communications": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EnclosureCommunications"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract monitoring interfaces. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    },
+    "submittals_and_handover": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SubmittalsAndHandover"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract engineering deliverables. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    },
+    "testing_and_commissioning": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TestingAndCommissioning"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract acceptance demonstrations. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    },
+    "delivery_and_installation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DeliveryAndInstallation"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract transport and positioning. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    },
+    "warranty_and_service": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/WarrantyAndService"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Extract support obligations. Return null for an absent section. For a present section retain all fields, using null for unstated values. False requires explicit negative evidence. Distinguish current scope from quoted options."
+    }
+  },
+  "required": [
+    "document_metadata",
+    "enclosure_construction",
+    "structural_design",
+    "finish_and_lifting",
+    "fire_separation",
+    "acoustic_performance",
+    "personnel_access",
+    "maintenance_clearances",
+    "ventilation_and_louvers",
+    "thermal_insulation",
+    "cold_weather_option",
+    "discharge_plenum",
+    "fuel_tank",
+    "fuel_fill",
+    "fuel_monitoring",
+    "fuel_polishing_option",
+    "auxiliary_distribution",
+    "lighting_and_outlets",
+    "fire_and_emergency_safety",
+    "communications",
+    "submittals_and_handover",
+    "testing_and_commissioning",
+    "delivery_and_installation",
+    "warranty_and_service"
+  ],
+  "title": "SyntheticGeneratorEnclosureSpecification",
+  "type": "object"
+}

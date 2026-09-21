@@ -1399,7 +1399,7 @@ module avmAppConfig 'br/public:avm/res/app-configuration/configuration-store:0.9
       }
       {
         name: 'APP_PROCESS_STEPS'
-        value: 'extract,map,evaluate,save'
+        value: 'extract,map,evaluate,validate,save'
       }
       {
         name: 'APP_STORAGE_BLOB_URL'

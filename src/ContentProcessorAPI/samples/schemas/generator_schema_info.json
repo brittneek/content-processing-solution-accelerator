@@ -1,0 +1,14 @@
+{
+  "schemas": [
+    {
+      "File": "generator_global_specification.json",
+      "RulesFile": "../rules/generator_global.rules.yaml",
+      "ClassName": "GeneratorGlobalSpecification",
+      "Description": "Generator project specification requirements"
+    }
+  ],
+  "schemaset": {
+    "Name": "Generator Specifications",
+    "Description": "Generator project specification extraction and validation"
+  }
+}

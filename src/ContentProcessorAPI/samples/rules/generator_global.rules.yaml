@@ -1,0 +1,335 @@
+dsl_version: 1
+rule_set_id: generator-global
+name: Generator Global Specification
+version: 0.1.0
+status: active
+description: >
+  Pilot baseline for requirements extracted from generator project
+  specification documents. Rules are external configuration and contain no
+  product-specific evaluator code.
+
+entities:
+  - id: diesel_engine_type
+    name: Diesel engine type
+    section: Engine Requirements
+    source_text_path: diesel_engine_type.source_text
+    source_page_path: diesel_engine_type.source_page
+    rules:
+      - id: diesel-engine-cycle
+        path: diesel_engine_type.cycles
+        operator: contains
+        expected: four_stroke
+        required: true
+        severity: high
+      - id: diesel-engine-cooling
+        path: diesel_engine_type.cooling_methods
+        operator: contains
+        expected: water_cooled
+        required: true
+        severity: high
+      - id: diesel-engine-fuel
+        path: diesel_engine_type.fuel_types
+        operator: contains
+        expected: diesel
+        required: true
+        severity: high
+
+  - id: cooling_requirements
+    name: Cooling requirements
+    section: Engine Requirements
+    source_text_path: cooling_requirements.source_text
+    source_page_path: cooling_requirements.source_page
+    rules:
+      - id: cooling-closed-loop-liquid
+        path: cooling_requirements.cooling_system
+        operator: equals
+        expected: closed_loop_liquid
+        required: true
+        severity: high
+      - id: cooling-full-load-site-conditions
+        path: cooling_requirements.full_load_at_site_conditions
+        operator: equals
+        expected: true
+        required: true
+        severity: high
+      - id: cooling-water-percent
+        path: cooling_requirements.water_percent
+        operator: equals
+        expected: 50
+        unit: percent
+        required: true
+        severity: high
+      - id: cooling-glycol-percent
+        path: cooling_requirements.glycol_percent
+        operator: equals
+        expected: 50
+        unit: percent
+        required: true
+        severity: high
+      - id: cooling-external-radiator-pressure-drop
+        path: cooling_requirements.maximum_external_radiator_pressure_drop_in_h2o
+        operator: maximum
+        expected: 0.5
+        unit: in_h2o
+        required: true
+        severity: high
+
+  - id: lubrication_system
+    name: Lubrication system
+    section: Engine Requirements
+    source_text_path: lubrication_system.source_text
+    source_page_path: lubrication_system.source_page
+    rules:
+      - id: lubrication-gear-type-pump
+        path: lubrication_system.gear_type_pump
+        operator: equals
+        expected: true
+        required: true
+        severity: high
+      - id: lubrication-positive-displacement
+        path: lubrication_system.positive_displacement_pump
+        operator: equals
+        expected: true
+        required: true
+        severity: high
+      - id: lubrication-full-pressure
+        path: lubrication_system.full_pressure_lubrication
+        operator: equals
+        expected: true
+        required: true
+        severity: high
+      - id: lubrication-water-cooled-oil-cooler
+        path: lubrication_system.water_cooled_oil_cooler
+        operator: equals
+        expected: true
+        required: true
+        severity: high
+      - id: lubrication-removal-efficiency
+        path: lubrication_system.particle_removal_efficiency_percent
+        operator: minimum
+        expected: 90
+        exclusive: true
+        unit: percent
+        required: true
+        severity: high
+      - id: lubrication-particle-size
+        path: lubrication_system.particle_size_micrometers
+        operator: maximum
+        expected: 5
+        unit: micrometer
+        required: true
+        severity: high
+      - id: lubrication-full-flow-fail-safe
+        path: lubrication_system.full_flow_fail_safe_filtration
+        operator: equals
+        expected: true
+        required: true
+        severity: high
+
+  - id: maximum_ambient_temperature
+    name: Maximum Ambient Temperature
+    section: Environmental / Ambient Conditions
+    source_text_path: maximum_ambient_temperature.source_text
+    source_page_path: maximum_ambient_temperature.source_page
+    rules:
+      - id: maximum-ambient-temperature
+        path: maximum_ambient_temperature.value_celsius
+        operator: minimum
+        expected: 40
+        unit: deg_c
+        required: true
+        severity: high
+
+  - id: minimum_ambient_temperature
+    name: Minimum Ambient Temperature
+    section: Environmental / Ambient Conditions
+    source_text_path: minimum_ambient_temperature.source_text
+    source_page_path: minimum_ambient_temperature.source_page
+    rules:
+      - id: minimum-ambient-temperature
+        path: minimum_ambient_temperature.value_celsius
+        operator: maximum
+        expected: -35
+        unit: deg_c
+        required: true
+        severity: high
+
+  - id: relative_humidity
+    name: Relative Humidity
+    section: Environmental / Ambient Conditions
+    source_text_path: relative_humidity.source_text
+    source_page_path: relative_humidity.source_page
+    rules:
+      - id: relative-humidity-minimum
+        path: relative_humidity.minimum_percent_rh
+        operator: maximum
+        expected: 0
+        unit: percent_rh
+        required: true
+        severity: high
+      - id: relative-humidity-maximum
+        path: relative_humidity.maximum_percent_rh
+        operator: minimum
+        expected: 95
+        unit: percent_rh
+        required: true
+        severity: high
+
+  - id: altitude
+    name: Altitude
+    section: Environmental / Ambient Conditions
+    source_text_path: altitude.source_text
+    source_page_path: altitude.source_page
+    rules:
+      - id: altitude-minimum-capability
+        path: altitude.minimum_capability_meters
+        operator: minimum
+        expected: 1000
+        unit: meter_above_sea_level
+        required: true
+        severity: high
+
+  - id: generator_control_ambient_rating
+    name: Generator Control Ambient Rating
+    section: Environmental / Ambient Conditions
+    source_text_path: generator_control_ambient_rating.source_text
+    source_page_path: generator_control_ambient_rating.source_page
+    rules:
+      - id: generator-control-minimum-temperature
+        path: generator_control_ambient_rating.minimum_temperature_celsius
+        operator: maximum
+        expected: -40
+        unit: deg_c
+        required: true
+        severity: high
+      - id: generator-control-maximum-temperature
+        path: generator_control_ambient_rating.maximum_temperature_celsius
+        operator: minimum
+        expected: 70
+        unit: deg_c
+        required: true
+        severity: high
+      - id: generator-control-humidity
+        path: generator_control_ambient_rating.maximum_percent_rh
+        operator: minimum
+        expected: 95
+        unit: percent_rh
+        required: true
+        severity: high
+      - id: generator-control-non-condensing
+        path: generator_control_ambient_rating.non_condensing
+        operator: equals
+        expected: true
+        required: true
+        severity: high
+      - id: generator-control-humidity-condition-minimum-temperature
+        path: generator_control_ambient_rating.humidity_condition_minimum_temperature_celsius
+        operator: maximum
+        expected: 30
+        unit: deg_c
+        required: true
+        severity: high
+      - id: generator-control-humidity-condition-maximum-temperature
+        path: generator_control_ambient_rating.humidity_condition_maximum_temperature_celsius
+        operator: minimum
+        expected: 60
+        unit: deg_c
+        required: true
+        severity: high
+
+  - id: battery_charger_ambient_rating
+    name: Battery Charger Ambient Rating
+    section: Environmental / Ambient Conditions
+    source_text_path: battery_charger_ambient_rating.source_text
+    source_page_path: battery_charger_ambient_rating.source_page
+    rules:
+      - id: battery-charger-minimum-temperature
+        path: battery_charger_ambient_rating.minimum_temperature_celsius
+        operator: maximum
+        expected: -20
+        unit: deg_c
+        required: true
+        severity: high
+      - id: battery-charger-maximum-temperature
+        path: battery_charger_ambient_rating.maximum_temperature_celsius
+        operator: minimum
+        expected: 60
+        unit: deg_c
+        required: true
+        severity: high
+      - id: battery-charger-minimum-humidity
+        path: battery_charger_ambient_rating.minimum_percent_rh
+        operator: maximum
+        expected: 5
+        unit: percent_rh
+        required: true
+        severity: high
+      - id: battery-charger-maximum-humidity
+        path: battery_charger_ambient_rating.maximum_percent_rh
+        operator: minimum
+        expected: 95
+        unit: percent_rh
+        required: true
+        severity: high
+      - id: battery-charger-non-condensing
+        path: battery_charger_ambient_rating.non_condensing
+        operator: equals
+        expected: true
+        required: true
+        severity: high
+
+  - id: voltage_regulator_ambient_rating
+    name: Voltage Regulator Ambient Rating
+    section: Environmental / Ambient Conditions
+    source_text_path: voltage_regulator_ambient_rating.source_text
+    source_page_path: voltage_regulator_ambient_rating.source_page
+    rules:
+      - id: voltage-regulator-minimum-temperature
+        path: voltage_regulator_ambient_rating.minimum_temperature_celsius
+        operator: maximum
+        expected: -40
+        unit: deg_c
+        required: true
+        severity: high
+      - id: voltage-regulator-maximum-temperature
+        path: voltage_regulator_ambient_rating.maximum_temperature_celsius
+        operator: minimum
+        expected: 70
+        unit: deg_c
+        required: true
+        severity: high
+
+  - id: engine_governing_control_ambient_rating
+    name: Engine Governing Control Ambient Rating
+    section: Environmental / Ambient Conditions
+    source_text_path: engine_governing_control_ambient_rating.source_text
+    source_page_path: engine_governing_control_ambient_rating.source_page
+    rules:
+      - id: engine-governing-control-minimum-temperature
+        path: engine_governing_control_ambient_rating.minimum_temperature_celsius
+        operator: maximum
+        expected: -40
+        unit: deg_c
+        required: true
+        severity: high
+      - id: engine-governing-control-maximum-temperature
+        path: engine_governing_control_ambient_rating.maximum_temperature_celsius
+        operator: minimum
+        expected: 85
+        unit: deg_c
+        required: true
+        severity: high
+      - id: engine-governing-control-minimum-humidity
+        path: engine_governing_control_ambient_rating.minimum_percent_rh
+        operator: maximum
+        expected: 0
+        unit: percent_rh
+        required: true
+        severity: high
+      - id: engine-governing-control-maximum-humidity
+        path: engine_governing_control_ambient_rating.maximum_percent_rh
+        operator: minimum
+        expected: 90
+        unit: percent_rh
+        required: true
+        severity: high

@@ -12,12 +12,20 @@ from fastapi import APIRouter, Body, File, HTTPException, Request, Response, Upl
 from fastapi.responses import StreamingResponse
 
 from app.libs.base.typed_fastapi import TypedFastAPI
+from app.routers.logics.rule_validator import (
+    RuleValidationError,
+    validate_rules_yaml,
+)
 from app.routers.logics.schema_validator import (
     SchemaValidationError,
     derive_class_name,
     validate_json_schema,
 )
-from app.routers.logics.schemavault import Schemas
+from app.routers.logics.schemavault import (
+    SchemaNotFoundError,
+    SchemaRulesNotFoundError,
+    Schemas,
+)
 from app.routers.models.schmavault.model import (
     Schema,
     SchemaVaultRegisterRequest,
@@ -40,6 +48,7 @@ router = APIRouter(
 #: against any caller able to register a schema.
 _ALLOWED_EXTENSIONS: tuple[str, ...] = (".json",)
 _MAX_UPLOAD_BYTES: int = 1 * 1024 * 1024
+_ALLOWED_RULE_EXTENSIONS: tuple[str, ...] = (".yaml", ".yml")
 
 
 def _validate_upload(file: UploadFile) -> tuple[str, str]:
@@ -73,6 +82,34 @@ def _validate_upload(file: UploadFile) -> tuple[str, str]:
         )
 
     return safe_filename, extension
+
+
+def _validate_rules_upload(file: UploadFile) -> str:
+    """Validate filename, extension, and size for an optional rules file."""
+    try:
+        safe_filename = sanitize_filename(file.filename)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Rules filename is too long.")
+
+    extension = os.path.splitext(safe_filename)[1].lower()
+    if extension not in _ALLOWED_RULE_EXTENSIONS:
+        raise HTTPException(
+            status_code=415,
+            detail="Unsupported validation-rules file type. Use .yaml or .yml.",
+        )
+
+    size_bytes = get_upload_size_bytes(file)
+    if size_bytes is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Unable to determine validation-rules upload size.",
+        )
+    if size_bytes > _MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail="Validation-rules file is too large (max 1 MB).",
+        )
+    return safe_filename
 
 
 @router.get(
@@ -139,6 +176,7 @@ async def Get_All_Registered_Schema(
 async def Register_Schema(
     data: SchemaVaultRegisterRequest = Body(...),
     file: UploadFile = File(...),
+    rules_file: UploadFile | None = File(default=None),
     request: Request = None,
 ) -> Schema:
     """Register a new schema file into the vault."""
@@ -162,6 +200,24 @@ async def Register_Schema(
     class_name = derive_class_name(document, fallback=data.ClassName or fallback)
     content_type = "application/json"
 
+    rules_filename = None
+    rules_version = None
+    if rules_file is not None:
+        rules_filename = _validate_rules_upload(rules_file)
+        rules_raw = await rules_file.read()
+        await rules_file.seek(0)
+        try:
+            rules_document = validate_rules_yaml(rules_raw)
+        except RuleValidationError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "Invalid validation rules.",
+                    "errors": exc.errors,
+                },
+            ) from exc
+        rules_version = str(rules_document["version"])
+
     return schemas.Add(
         file,
         Schema(
@@ -171,7 +227,13 @@ async def Register_Schema(
             FileName=safe_filename,
             ContentType=content_type,
             Format="json",
+            RulesFileName=rules_filename,
+            RulesContentType=(
+                "application/yaml" if rules_filename is not None else None
+            ),
+            RulesVersion=rules_version,
         ),
+        rules_file,
     )
 
 
@@ -206,6 +268,7 @@ async def Register_Schema(
 async def Update_Schema(
     data: SchemaVaultUpdateRequest = Body(...),
     file: UploadFile = File(...),
+    rules_file: UploadFile | None = File(default=None),
     request: Request = None,
 ) -> Schema:
     """Update an existing schema with a new file."""
@@ -225,8 +288,34 @@ async def Update_Schema(
     fallback = os.path.splitext(safe_filename)[0]
     class_name = derive_class_name(document, fallback=data.ClassName or fallback)
 
+    rules_filename = None
+    rules_version = None
+    if rules_file is not None:
+        rules_filename = _validate_rules_upload(rules_file)
+        rules_raw = await rules_file.read()
+        await rules_file.seek(0)
+        try:
+            rules_document = validate_rules_yaml(rules_raw)
+        except RuleValidationError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "Invalid validation rules.",
+                    "errors": exc.errors,
+                },
+            ) from exc
+        rules_version = str(rules_document["version"])
+
     schemas: Schemas = app.app_context.get_service(Schemas)
-    return schemas.Update(file, data.SchemaId, class_name, "json")
+    return schemas.Update(
+        file,
+        data.SchemaId,
+        class_name,
+        "json",
+        rules_file,
+        rules_filename,
+        rules_version,
+    )
 
 
 @router.delete(
@@ -307,4 +396,32 @@ async def Get_Registered_Schema_File_By_Schema_Id(
 
     return StreamingResponse(
         content=file_stream, media_type=schemas["ContentType"], headers=headers
+    )
+
+
+@router.get(
+    "/schemas/{schema_id}/rules",
+    summary="Download schema validation rules",
+)
+async def Get_Registered_Schema_Rules_By_Schema_Id(
+    schema_id: str,
+    request: Request = None,
+):
+    """Download the optional YAML validation rules associated with a schema."""
+    app: TypedFastAPI = request.app  # type: ignore
+    schemas: Schemas = app.app_context.get_service(Schemas)
+    try:
+        rules = schemas.GetRulesFile(schema_id)
+    except (SchemaNotFoundError, SchemaRulesNotFoundError) as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    encoded_filename = urllib.parse.quote(rules["FileName"])
+    headers = {
+        "Content-Disposition": f"attachment; filename*=UTF-8''{encoded_filename}",
+        "Content-Type": rules["ContentType"],
+    }
+    return StreamingResponse(
+        content=io.BytesIO(rules["File"]),
+        media_type=rules["ContentType"],
+        headers=headers,
     )

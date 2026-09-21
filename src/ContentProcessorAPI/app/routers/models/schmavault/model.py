@@ -23,6 +23,9 @@ class Schema(BaseModel):
         Format: Storage format of the schema artifact. Always
             ``"json"`` — declarative JSON Schema descriptors are the
             only supported format.
+        RulesFileName: Optional YAML validation-rules filename.
+        RulesContentType: MIME type of the optional validation-rules file.
+        RulesVersion: Version declared by the optional validation-rules file.
         Created_On: UTC timestamp when the schema was registered.
         Updated_On: UTC timestamp of the last update.
     """
@@ -33,6 +36,9 @@ class Schema(BaseModel):
     FileName: str
     ContentType: str
     Format: Literal["json"] = Field(default="json")
+    RulesFileName: str | None = Field(default=None)
+    RulesContentType: str | None = Field(default=None)
+    RulesVersion: str | None = Field(default=None)
     Created_On: Optional[datetime.datetime] = Field(default=None)
     Updated_On: Optional[datetime.datetime] = Field(default=None)
     model_config = ConfigDict(from_attributes=True)

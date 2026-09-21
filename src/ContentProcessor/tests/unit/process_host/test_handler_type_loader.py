@@ -33,3 +33,8 @@ class TestLoad:
             Exception, match="Error loading processor NonexistentHandler"
         ):
             load("nonexistent")
+
+    def test_load_validate_handler(self):
+        loaded = load("validate")
+
+        assert loaded.__name__ == "ValidateHandler"

@@ -86,6 +86,35 @@ def test_get_file_not_found(MockBlob, MockMongo, mock_app_context):
 
 @patch("app.routers.logics.schemavault.CosmosMongDBHelper")
 @patch("app.routers.logics.schemavault.StorageBlobHelper")
+def test_get_rules_file(MockBlob, MockMongo, mock_app_context):
+    mock_mongo = MockMongo.return_value
+    mock_mongo.find_document.return_value = [
+        {
+            "Id": "s1",
+            "ClassName": "Invoice",
+            "Description": "desc",
+            "FileName": "invoice.json",
+            "ContentType": "application/json",
+            "RulesFileName": "invoice.rules.yaml",
+            "RulesContentType": "application/yaml",
+            "RulesVersion": "1.0.0",
+        }
+    ]
+    mock_blob = MockBlob.return_value
+    mock_blob.download_blob.return_value = b"rule_set_id: invoice"
+
+    from app.routers.logics.schemavault import Schemas
+
+    schemas = Schemas(app_context=mock_app_context)
+    result = schemas.GetRulesFile("s1")
+
+    assert result["File"] == b"rule_set_id: invoice"
+    assert result["FileName"] == "invoice.rules.yaml"
+    assert result["ContentType"] == "application/yaml"
+
+
+@patch("app.routers.logics.schemavault.CosmosMongDBHelper")
+@patch("app.routers.logics.schemavault.StorageBlobHelper")
 def test_add(MockBlob, MockMongo, mock_app_context):
     mock_mongo = MockMongo.return_value
     mock_blob = MockBlob.return_value
@@ -105,6 +134,40 @@ def test_add(MockBlob, MockMongo, mock_app_context):
     result = schemas.Add(file, schema)
     assert result.Created_On == "2025-01-01T00:00:00Z"
     mock_mongo.insert_document.assert_called_once()
+
+
+@patch("app.routers.logics.schemavault.CosmosMongDBHelper")
+@patch("app.routers.logics.schemavault.StorageBlobHelper")
+def test_add_with_rules(MockBlob, MockMongo, mock_app_context):
+    mock_mongo = MockMongo.return_value
+    mock_blob = MockBlob.return_value
+    mock_blob.upload_blob.return_value = {"date": "2025-01-01T00:00:00Z"}
+
+    from app.routers.logics.schemavault import Schemas
+
+    schemas = Schemas(app_context=mock_app_context)
+    schema_file = MagicMock()
+    rules_file = MagicMock()
+    schema = Schema(
+        Id="s1",
+        ClassName="Invoice",
+        Description="desc",
+        FileName="invoice.json",
+        ContentType="application/json",
+        RulesFileName="invoice.rules.yaml",
+        RulesContentType="application/yaml",
+        RulesVersion="1.0.0",
+    )
+
+    schemas.Add(schema_file, schema, rules_file)
+
+    assert mock_blob.upload_blob.call_count == 2
+    mock_blob.upload_blob.assert_any_call(
+        "invoice.rules.yaml", rules_file.file, "s1"
+    )
+    inserted = mock_mongo.insert_document.call_args.args[0]
+    assert inserted["RulesFileName"] == "invoice.rules.yaml"
+    assert inserted["RulesVersion"] == "1.0.0"
 
 
 @patch("app.routers.logics.schemavault.CosmosMongDBHelper")
@@ -166,6 +229,36 @@ def test_delete(MockBlob, MockMongo, mock_app_context):
     result = schemas.Delete("s1")
     assert result.Id == "s1"
     mock_mongo.delete_document.assert_called_once_with("s1")
+
+
+@patch("app.routers.logics.schemavault.CosmosMongDBHelper")
+@patch("app.routers.logics.schemavault.StorageBlobHelper")
+def test_delete_with_rules(MockBlob, MockMongo, mock_app_context):
+    mock_mongo = MockMongo.return_value
+    mock_mongo.find_document.return_value = [
+        {
+            "Id": "s1",
+            "ClassName": "Invoice",
+            "Description": "desc",
+            "FileName": "invoice.json",
+            "ContentType": "application/json",
+            "RulesFileName": "invoice.rules.yaml",
+            "RulesContentType": "application/yaml",
+            "RulesVersion": "1.0.0",
+        }
+    ]
+
+    from app.routers.logics.schemavault import Schemas
+
+    schemas = Schemas(app_context=mock_app_context)
+    schemas.Delete("s1")
+
+    mock_mongo.delete_document.assert_called_once_with("s1")
+    mock_blob = MockBlob.return_value
+    mock_blob.delete_blob.assert_called_once_with("invoice.json", "s1")
+    mock_blob.delete_blob_and_cleanup.assert_called_once_with(
+        "invoice.rules.yaml", "s1"
+    )
 
 
 @patch("app.routers.logics.schemavault.CosmosMongDBHelper")

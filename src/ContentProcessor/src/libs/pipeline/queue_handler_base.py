@@ -260,6 +260,8 @@ class HandlerBase(AppModelBase, ABC):
                             return ArtifactType.SchemaMappedData
                         elif step_name == "evaluate":
                             return ArtifactType.ScoreMergedData
+                        elif step_name == "validate":
+                            return ArtifactType.ValidationData
                         else:
                             return ArtifactType.Undefined
 

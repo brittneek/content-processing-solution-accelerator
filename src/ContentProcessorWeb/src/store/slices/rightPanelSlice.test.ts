@@ -5,7 +5,7 @@
  * @file Tests for rightPanelSlice — file blob fetching and response caching.
  */
 
-import reducer, { fetchContentFileData } from './rightPanelSlice';
+import reducer, { fetchContentFileData, setSelectedEvidence } from './rightPanelSlice';
 import type { RightPanelState } from './rightPanelSlice';
 
 // ── Helpers ────────────────────────────────────────────────────────────
@@ -16,12 +16,36 @@ const getInitialState = (): RightPanelState => ({
     rLoader: false,
     rError: '',
     fileResponse: [],
+    selectedEvidence: null,
 });
 
 describe('rightPanelSlice', () => {
     describe('initial state', () => {
         it('should return the correct initial state', () => {
             expect(reducer(undefined, { type: 'unknown' })).toEqual(getInitialState());
+        });
+
+        it('stores and clears selected source evidence', () => {
+            const selection = {
+                entityId: 'maximum_temperature',
+                entityName: 'Maximum temperature',
+                status: 'fail' as const,
+                pageNumber: 2,
+                regions: [
+                    {
+                        page_number: 2,
+                        polygon: [
+                            { x: 0.1, y: 0.2 },
+                            { x: 0.5, y: 0.2 },
+                            { x: 0.5, y: 0.3 },
+                        ],
+                    },
+                ],
+            };
+
+            const selected = reducer(getInitialState(), setSelectedEvidence(selection));
+            expect(selected.selectedEvidence).toEqual(selection);
+            expect(reducer(selected, setSelectedEvidence(null)).selectedEvidence).toBeNull();
         });
     });
 

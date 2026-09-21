@@ -5,7 +5,7 @@
 
 import datetime
 import json
-from typing import Any, List, Optional
+from typing import Any, List, Literal, Optional
 
 from pydantic import (
     BaseModel,
@@ -57,6 +57,77 @@ class ExtractionComparisonData(BaseModel):
 
     def to_json(self) -> str:
         return self.model_dump_json(indent=4)
+
+
+class RuleValidationResult(BaseModel):
+    """Outcome of one schema-associated validation rule."""
+
+    rule_id: str
+    path: str
+    operator: str
+    status: Literal["pass", "fail", "missing", "not_applicable", "error"]
+    severity: Literal["critical", "high", "medium", "low"]
+    expected: Any = None
+    actual: Any = None
+    unit: str | None = None
+    message: str
+
+
+class EvidencePoint(BaseModel):
+    """Normalized point within a source page."""
+
+    x: float
+    y: float
+
+
+class EvidenceRegion(BaseModel):
+    """Source-page polygon supporting an extracted entity."""
+
+    page_number: int
+    polygon: list[EvidencePoint]
+
+
+class EntityValidationResult(BaseModel):
+    """Rolled-up validation outcome and source evidence for one entity."""
+
+    entity_id: str
+    name: str
+    section: str
+    status: Literal["pass", "fail", "missing", "not_applicable", "error"]
+    source_text: str | None = None
+    source_page: int | None = None
+    evidence_match_type: Literal["exact", "contains", "fuzzy", "not_found"] = (
+        "not_found"
+    )
+    evidence_match_confidence: float = 0
+    source_regions: list[EvidenceRegion] = Field(default_factory=list)
+    rule_results: list[RuleValidationResult]
+
+
+class ValidationSummary(BaseModel):
+    """Entity counts grouped by validation outcome."""
+
+    passed: int = 0
+    failed: int = 0
+    missing: int = 0
+    not_applicable: int = 0
+    errors: int = 0
+
+
+class ValidationResult(BaseModel):
+    """Completed deterministic validation result for a processed document."""
+
+    rule_set_id: str
+    rule_set_version: str
+    summary: ValidationSummary
+    entities: list[EntityValidationResult]
+
+
+class SkippedValidationResult(BaseModel):
+    """Validation result returned when the selected schema has no rules."""
+
+    status: Literal["skipped"]
+    reason: str
 
 
 class Step_Outputs(BaseModel):
@@ -116,6 +187,7 @@ class ContentProcess(BaseModel):
         completion_tokens: LLM completion tokens consumed.
         process_output: Per-step output payloads.
         extracted_comparison_data: Extraction-vs-schema comparison rows.
+        validation_result: Rule and entity compliance outcomes, when configured.
         comment: User-supplied comment.
     """
 
@@ -145,6 +217,7 @@ class ContentProcess(BaseModel):
 
     process_output: list[Step_Outputs] = Field(default_factory=list)
     extracted_comparison_data: Optional[ExtractionComparisonData] = None
+    validation_result: ValidationResult | SkippedValidationResult | None = None
 
     comment: Optional[str] = None
 

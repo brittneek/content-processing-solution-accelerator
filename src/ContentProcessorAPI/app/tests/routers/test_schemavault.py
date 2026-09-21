@@ -12,7 +12,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from app.routers.logics.schemavault import Schemas
+from app.routers.logics.schemavault import SchemaRulesNotFoundError, Schemas
 from app.routers.schemavault import router
 
 
@@ -227,6 +227,24 @@ def _minimal_json_schema_bytes(title: str = "InvoiceSchema") -> bytes:
     }).encode("utf-8")
 
 
+def _minimal_rules_bytes() -> bytes:
+    return b"""
+dsl_version: 1
+rule_set_id: invoice-rules
+name: Invoice rules
+version: 1.0.0
+entities:
+  - id: invoice_id
+    name: Invoice ID
+    section: Invoice
+    rules:
+      - id: invoice-id-required
+        path: invoice_id
+        operator: exists
+        required: true
+"""
+
+
 def test_register_schema_accepts_json(client_and_schemas):
     client, mock_schemas = client_and_schemas
     mock_schemas.Add.return_value = {
@@ -260,6 +278,94 @@ def test_register_schema_accepts_json(client_and_schemas):
     assert schema_obj.ClassName == "InvoiceSchema"
     assert schema_obj.Format == "json"
     assert schema_obj.FileName == "invoice.json"
+
+
+def test_register_schema_accepts_optional_rules_file(client_and_schemas):
+    client, mock_schemas = client_and_schemas
+    mock_schemas.Add.return_value = {
+        "Id": "test-id",
+        "ClassName": "InvoiceSchema",
+        "Description": "desc",
+        "FileName": "invoice.json",
+        "ContentType": "application/json",
+        "Format": "json",
+        "RulesFileName": "invoice.rules.yaml",
+        "RulesContentType": "application/yaml",
+        "RulesVersion": "1.0.0",
+    }
+    files = {
+        "file": ("invoice.json", _minimal_json_schema_bytes(), "application/json"),
+        "rules_file": (
+            "invoice.rules.yaml",
+            _minimal_rules_bytes(),
+            "application/yaml",
+        ),
+        "data": (
+            None,
+            json.dumps({"ClassName": "ignored", "Description": "desc"}),
+            "application/json",
+        ),
+    }
+
+    response = client.post("/schemavault/", files=files)
+
+    assert response.status_code == 200, response.text
+    add_args, _ = mock_schemas.Add.call_args
+    schema_obj = add_args[1]
+    assert schema_obj.RulesFileName == "invoice.rules.yaml"
+    assert schema_obj.RulesVersion == "1.0.0"
+    assert add_args[2].filename == "invoice.rules.yaml"
+
+
+def test_register_schema_rejects_invalid_rules(client_and_schemas):
+    client, mock_schemas = client_and_schemas
+    mock_schemas.Add.reset_mock()
+    files = {
+        "file": ("invoice.json", _minimal_json_schema_bytes(), "application/json"),
+        "rules_file": (
+            "invoice.rules.yaml",
+            b"entities: []\n",
+            "application/yaml",
+        ),
+        "data": (
+            None,
+            json.dumps({"ClassName": "ignored", "Description": "desc"}),
+            "application/json",
+        ),
+    }
+
+    response = client.post("/schemavault/", files=files)
+
+    assert response.status_code == 400
+    assert response.json()["detail"]["message"] == "Invalid validation rules."
+    assert mock_schemas.Add.call_count == 0
+
+
+def test_get_registered_schema_rules(client_and_schemas):
+    client, mock_schemas = client_and_schemas
+    mock_schemas.GetRulesFile.return_value = {
+        "FileName": "invoice.rules.yaml",
+        "ContentType": "application/yaml",
+        "File": _minimal_rules_bytes(),
+    }
+
+    response = client.get("/schemavault/schemas/test-id/rules")
+
+    assert response.status_code == 200
+    assert response.content == _minimal_rules_bytes()
+    assert response.headers["Content-Type"] == "application/yaml"
+
+
+def test_get_registered_schema_rules_returns_404_when_absent(client_and_schemas):
+    client, mock_schemas = client_and_schemas
+    mock_schemas.GetRulesFile.side_effect = SchemaRulesNotFoundError(
+        "Validation rules not found"
+    )
+
+    response = client.get("/schemavault/schemas/test-id/rules")
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Validation rules not found"}
 
 
 def test_register_schema_rejects_invalid_json(client_and_schemas):

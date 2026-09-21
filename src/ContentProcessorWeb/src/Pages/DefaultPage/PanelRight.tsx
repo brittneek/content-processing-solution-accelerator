@@ -13,7 +13,10 @@ import { bundleIcon, ChevronDoubleLeft20Filled, ChevronDoubleLeft20Regular } fro
 
 import { useDispatch, useSelector, shallowEqual } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
-import { fetchContentFileData } from '../../store/slices/rightPanelSlice';
+import {
+  fetchContentFileData,
+  setSelectedEvidence,
+} from '../../store/slices/rightPanelSlice';
 
 import PanelToolbar from "../../Hooks/usePanelHooks";
 import DocumentViewer from '../../Components/DocumentViewer/DocumentViewer';
@@ -37,7 +40,8 @@ const PanelRight: React.FC<PanelRightProps> = ({ togglePanel }) => {
     fileHeaders: state.rightPanel.fileHeaders,
     blobURL: state.rightPanel.blobURL,
     rLoader: state.rightPanel.rLoader,
-    fileResponse: state.rightPanel.fileResponse
+    fileResponse: state.rightPanel.fileResponse,
+    selectedEvidence: state.rightPanel.selectedEvidence,
   }), shallowEqual);
 
   const isBlobExists = () => {
@@ -74,6 +78,8 @@ const PanelRight: React.FC<PanelRightProps> = ({ togglePanel }) => {
               metadata={{ mimeType: fileData.mimeType }}
               urlWithSasToken={fileData.urlWithSasToken}
               iframeKey={1}
+              selectedEvidence={store.selectedEvidence}
+              onClearEvidence={() => dispatch(setSelectedEvidence(null))}
             />
         }
       </div>

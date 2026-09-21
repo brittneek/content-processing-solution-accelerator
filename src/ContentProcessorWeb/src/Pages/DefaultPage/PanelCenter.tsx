@@ -37,9 +37,14 @@ import {
 } from '../../store/slices/centerPanelSlice';
 import { startLoader, stopLoader } from "../../store/slices/loaderSlice";
 import { setRefreshGrid } from "../../store/slices/leftPanelSlice";
+import {
+  setSelectedEvidence,
+  SourceEvidenceSelection,
+} from "../../store/slices/rightPanelSlice";
 
 import PanelToolbar from "../../Hooks/usePanelHooks";
 import JSONEditor from "../../Components/JSONEditor/JSONEditor";
+import ComplianceResults from "./Components/ComplianceResults/ComplianceResults";
 import ProcessSteps from './Components/ProcessSteps/ProcessSteps';
 
 import "../../Styles/App.css";
@@ -154,6 +159,7 @@ const PanelCenter: React.FC<PanelCenterProps> = ({ togglePanel }) => {
 
   useEffect(() => {
     dispatch(setActiveProcessId(store.processId ?? ''))
+    dispatch(setSelectedEvidence(null));
     setComment('');
     // Reset tab to appropriate default when selection changes
     if (store.selectionType === 'claim') {
@@ -283,6 +289,35 @@ const PanelCenter: React.FC<PanelCenterProps> = ({ togglePanel }) => {
     </div>
   ), [store.processStepsData, store.activeProcessId, styles.tabItemCotnent, apiLoader]);
 
+  const Compliance = useCallback(() => {
+    const validationResult = store.contentData.validation_result;
+    const comparisonData = store.contentData.extracted_comparison_data as
+      | { items?: { Field?: string | null; Confidence?: string | null }[] }
+      | undefined;
+
+    return (
+      <div role="tabpanel" className={styles.processTabItemCotnent} aria-labelledby="Compliance">
+        <ComplianceResults
+          validationResult={validationResult as React.ComponentProps<typeof ComplianceResults>["validationResult"]}
+          comparisonItems={comparisonData?.items}
+          isLoading={apiLoader}
+          onViewSource={(entity) => {
+            const regions = entity.source_regions ?? [];
+            if (regions.length === 0) return;
+            const selection: SourceEvidenceSelection = {
+              entityId: entity.entity_id,
+              entityName: entity.name,
+              status: entity.status,
+              pageNumber: regions[0].page_number,
+              regions,
+            };
+            dispatch(setSelectedEvidence(selection));
+          }}
+        />
+      </div>
+    );
+  }, [store.contentData, styles.processTabItemCotnent, apiLoader, dispatch]);
+
   const onTabSelect = (event: SelectTabEvent, data: SelectTabData) => {
     setSelectedTab(data.value);
   }
@@ -364,23 +399,27 @@ const PanelCenter: React.FC<PanelCenterProps> = ({ togglePanel }) => {
     </>
   );
 
-  // Render document view (Extracted Results + Process Steps tabs)
+  // Render document view
   const renderDocumentView = () => (
     <>
       <div className={styles.panelCenterTopSection} >
         <div className={styles.tabContainer}>
           <TabList selectedValue={selectedTab} onTabSelect={onTabSelect} className="custom-test" >
             <Tab value="extracted-results" >Extracted Results</Tab>
+            {store.contentData.validation_result != null && (
+              <Tab value="compliance">Compliance</Tab>
+            )}
             <Tab value="process-history">Process Steps</Tab>
           </TabList>
         </div>
         <Divider />
         <div className={styles.tabContent}>
           {selectedTab === "extracted-results" && <ExtractedResults />}
+          {selectedTab === "compliance" && <Compliance />}
           {selectedTab === "process-history" && <ProcessHistory />}
         </div>
       </div>
-      {selectedTab !== "process-history" &&
+      {selectedTab !== "process-history" && selectedTab !== "compliance" &&
         <>
           <Divider />
           <div className={styles.panelCenterBottomSeciton}>

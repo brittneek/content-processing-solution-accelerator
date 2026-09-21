@@ -57,6 +57,7 @@ class ContentProcess(BaseModel):
         completion_tokens: Token count produced by the LLM completion.
         process_output: Per-step output snapshots.
         extracted_comparison_data: Side-by-side comparison of fields.
+        validation_result: Entity-level rule evaluation output.
     """
 
     process_id: str
@@ -78,6 +79,7 @@ class ContentProcess(BaseModel):
 
     process_output: list[Step_Outputs] = []
     extracted_comparison_data: Optional[ExtractionComparisonData] = None
+    validation_result: Optional[dict] = None
 
     comment: Optional[str] = None
 

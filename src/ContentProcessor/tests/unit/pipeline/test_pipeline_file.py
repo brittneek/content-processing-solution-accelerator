@@ -22,6 +22,7 @@ class TestArtifactType:
         assert ArtifactType.SourceContent == "source_content"
         assert ArtifactType.ExtractedContent == "extracted_content"
         assert ArtifactType.SchemaMappedData == "schema_mapped_data"
+        assert ArtifactType.ValidationData == "validation_data"
         assert ArtifactType.SavedContent == "saved_content"
 
     def test_membership(self):

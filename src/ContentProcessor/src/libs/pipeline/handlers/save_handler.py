@@ -26,7 +26,7 @@ class SaveHandler(HandlerBase):
     """Pipeline step that persists final extraction results.
 
     Responsibilities:
-        1. Collect outputs from extract, map, and evaluate steps.
+        1. Collect outputs from extract, map, evaluate, and validate steps.
         2. Compute aggregate scores (entity, schema, min confidence).
         3. Write the ContentProcess record to Cosmos DB.
         4. Save step-output history to blob storage.
@@ -64,6 +64,17 @@ class SaveHandler(HandlerBase):
         # Deserialize the result to ParsedChatCompletion
         evaluated_result = DataExtractionResult(
             **json.loads(output_file_json_string_from_evaluate)
+        )
+        output_file_json_string_from_validate = (
+            self.download_output_file_to_json_string(
+                processed_by="validate",
+                artifact_type=ArtifactType.ValidationData,
+            )
+        )
+        validation_result = (
+            json.loads(output_file_json_string_from_validate)
+            if output_file_json_string_from_validate
+            else None
         )
 
         def find_process_result(step_name: str):
@@ -111,6 +122,19 @@ class SaveHandler(HandlerBase):
                 step_result=json.loads(output_file_json_string_from_evaluate),
             )
         )
+        if validation_result is not None:
+            validate_process_result = find_process_result("validate")
+            process_outputs.append(
+                Step_Outputs(
+                    step_name="validate",
+                    processed_time=(
+                        validate_process_result.elapsed
+                        if validate_process_result is not None
+                        else ""
+                    ),
+                    step_result=validation_result,
+                )
+            )
 
         # Compute the aggregate scores. Successful (Completed) processing
         # always yields numeric scores: when probabilistic confidence is
@@ -150,6 +174,7 @@ class SaveHandler(HandlerBase):
             ),
             confidence=evaluated_result.confidence,
             extracted_comparison_data=evaluated_result.comparison_result,
+            validation_result=validation_result,
             comment="",
         )
 

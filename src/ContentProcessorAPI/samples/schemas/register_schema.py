@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import json
 import sys
+from contextlib import ExitStack
 from pathlib import Path
 
 import requests
@@ -59,12 +60,16 @@ def _register_schema(
     class_name: str,
     description: str,
     existing_schemas: list[dict],
+    rules_path: Path | None = None,
 ) -> str | None:
     """Register a single schema file. Returns the schema Id or None on failure."""
     print(f"\nProcessing schema: {class_name}")
 
     if not schema_path.is_file():
         print(f"Error: Schema file '{schema_path}' does not exist. Skipping...")
+        return None
+    if rules_path is not None and not rules_path.is_file():
+        print(f"Error: Rules file '{rules_path}' does not exist. Skipping...")
         return None
 
     # Check whether this schema is already registered
@@ -93,10 +98,20 @@ def _register_schema(
     print(f"Registering new schema '{class_name}' ({extension})...")
     data_payload = json.dumps({"ClassName": class_name, "Description": description})
 
-    with open(schema_path, "rb") as f:
-        files = {"file": (schema_path.name, f, content_type)}
+    with ExitStack() as stack:
+        schema_handle = stack.enter_context(open(schema_path, "rb"))
+        files = {"file": (schema_path.name, schema_handle, content_type)}
+        if rules_path is not None:
+            rules_handle = stack.enter_context(open(rules_path, "rb"))
+            files["rules_file"] = (
+                rules_path.name,
+                rules_handle,
+                "application/yaml",
+            )
         data = {"data": data_payload}
-        resp = requests.post(schemavault_url, files=files, data=data, timeout=60)
+        resp = requests.post(
+            schemavault_url, files=files, data=data, timeout=60
+        )
 
     if resp.status_code == 200:
         body = resp.json()
@@ -232,6 +247,12 @@ def main() -> None:
         schema_file = Path(entry["File"])
         if not schema_file.is_absolute():
             schema_file = schema_info_dir / schema_file
+        rules_file = entry.get("RulesFile")
+        rules_path = None
+        if rules_file:
+            rules_path = Path(rules_file)
+            if not rules_path.is_absolute():
+                rules_path = schema_info_dir / rules_path
 
         schema_id = _register_schema(
             schemavault_url=schemavault_url,
@@ -239,6 +260,7 @@ def main() -> None:
             class_name=entry["ClassName"],
             description=entry["Description"],
             existing_schemas=existing_schemas,
+            rules_path=rules_path,
         )
         if schema_id:
             registered[entry["ClassName"]] = schema_id

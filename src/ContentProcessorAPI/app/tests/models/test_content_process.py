@@ -15,7 +15,9 @@ from app.routers.models.contentprocessor.content_process import (
     ExtractionComparisonData,
     ExtractionComparisonItem,
     PaginatedResponse,
+    SkippedValidationResult,
     Step_Outputs,
+    ValidationResult,
 )
 
 CONN = "mongodb://localhost:27017"
@@ -50,6 +52,72 @@ class TestContentProcessValidators:
     def test_non_string_id_coerced(self):
         p = ContentProcess(**{"process_id": "abc", "id": 123})
         assert p.id == "abc"  # non-string → fallback
+
+    def test_completed_validation_result_is_typed(self):
+        process = ContentProcess(
+            process_id="abc",
+            validation_result={
+                "rule_set_id": "generator-global",
+                "rule_set_version": "0.1.0",
+                "summary": {
+                    "passed": 1,
+                    "failed": 0,
+                    "missing": 0,
+                    "not_applicable": 0,
+                    "errors": 0,
+                },
+                "entities": [
+                    {
+                        "entity_id": "engine_type",
+                        "name": "Engine type",
+                        "section": "Engine",
+                        "status": "pass",
+                        "source_text": "Four-cycle diesel engine",
+                        "source_page": 4,
+                        "evidence_match_type": "exact",
+                        "evidence_match_confidence": 1,
+                        "source_regions": [
+                            {
+                                "page_number": 4,
+                                "polygon": [
+                                    {"x": 0.1, "y": 0.2},
+                                    {"x": 0.5, "y": 0.2},
+                                    {"x": 0.5, "y": 0.25},
+                                    {"x": 0.1, "y": 0.25},
+                                ],
+                            }
+                        ],
+                        "rule_results": [
+                            {
+                                "rule_id": "engine-cycle",
+                                "path": "engine_type.cycles",
+                                "operator": "contains",
+                                "status": "pass",
+                                "severity": "high",
+                                "expected": "four_cycle",
+                                "actual": ["four_cycle"],
+                                "message": "Required value is present.",
+                            }
+                        ],
+                    }
+                ],
+            },
+        )
+
+        assert isinstance(process.validation_result, ValidationResult)
+        assert process.validation_result.entities[0].source_page == 4
+        assert process.validation_result.entities[0].source_regions[0].polygon[0].x == 0.1
+
+    def test_skipped_validation_result_is_typed(self):
+        process = ContentProcess(
+            process_id="abc",
+            validation_result={
+                "status": "skipped",
+                "reason": "The selected schema has no validation rules.",
+            },
+        )
+
+        assert isinstance(process.validation_result, SkippedValidationResult)
 
 
 # ---------------------------------------------------------------------------

@@ -129,6 +129,18 @@ def test_get_process(mock_get_status, client):
         status="Completed",
         result={},
         confidence={},
+        validation_result={
+            "rule_set_id": "generator-global",
+            "rule_set_version": "0.1.0",
+            "summary": {
+                "passed": 1,
+                "failed": 0,
+                "missing": 0,
+                "not_applicable": 0,
+                "errors": 0,
+            },
+            "entities": [],
+        },
         target_schema={
             "Id": "schema_id",
             "ClassName": "class_name",
@@ -141,6 +153,7 @@ def test_get_process(mock_get_status, client):
 
     response = client.get("/contentprocessor/processed/test_process_id")
     assert response.status_code == 200
+    assert response.json()["validation_result"]["rule_set_id"] == "generator-global"
 
 
 @patch("app.routers.contentprocessor.CosmosContentProcess.get_status_from_cosmos")
