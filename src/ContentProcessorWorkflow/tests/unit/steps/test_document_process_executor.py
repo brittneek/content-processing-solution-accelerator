@@ -10,6 +10,8 @@ import hashlib
 from datetime import datetime, timezone
 from unittest.mock import MagicMock
 
+import pytest
+
 from steps.document_process.executor.document_process_executor import (
     DocumentProcessExecutor,
 )
@@ -164,6 +166,25 @@ class TestStatusCodeMapping:
     def test_unknown_status_is_failed(self):
         assert self._map_status(503) == "Failed"
         assert self._map_status(429) == "Failed"
+
+
+class TestDocumentCompletion:
+    def test_accepts_completed_documents(self):
+        DocumentProcessExecutor._ensure_documents_completed(
+            [{"file_name": "doc.pdf", "final_status": "Completed"}]
+        )
+
+    def test_rejects_timed_out_documents(self):
+        with pytest.raises(RuntimeError, match="doc.pdf: Timeout"):
+            DocumentProcessExecutor._ensure_documents_completed(
+                [{"file_name": "doc.pdf", "final_status": "Timeout"}]
+            )
+
+    def test_rejects_exception_results(self):
+        with pytest.raises(RuntimeError, match="doc.pdf: exception"):
+            DocumentProcessExecutor._ensure_documents_completed(
+                [{"file_name": "doc.pdf", "status": "exception"}]
+            )
 
 
 # ── _on_poll behaviour ──────────────────────────────────────────────────────

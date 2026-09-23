@@ -233,15 +233,21 @@ dsl_version: 1
 rule_set_id: invoice-rules
 name: Invoice rules
 version: 1.0.0
+minimum_confidence: 0.6
 entities:
   - id: invoice_id
     name: Invoice ID
     section: Invoice
+    baseline: The invoice ID must be stated.
     rules:
       - id: invoice-id-required
         path: invoice_id
         operator: exists
         required: true
+        when:
+          - path: document_type
+            operator: equals
+            expected: invoice
 """
 
 

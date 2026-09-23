@@ -8,6 +8,7 @@ from libs.pipeline.handlers.logics.validate_handler.evidence import (
     resolve_validation_evidence,
 )
 from libs.pipeline.handlers.logics.validate_handler.model import (
+    ComplianceStatus,
     EntityValidationResult,
     RuleResult,
     RuleSetDefinition,
@@ -20,6 +21,7 @@ from libs.pipeline.handlers.logics.validate_handler.rule_loader import (
 )
 
 __all__ = [
+    "ComplianceStatus",
     "EntityValidationResult",
     "RuleEvaluator",
     "RuleResult",

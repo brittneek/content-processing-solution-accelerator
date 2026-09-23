@@ -28,6 +28,10 @@ from libs.agent_framework.agent_framework_helper import AgentFrameworkHelper
 from libs.application.application_context import AppContext
 from repositories.claim_processes import Claim_Processes
 from services.content_process_service import ContentProcessService
+from steps.compliance_reporting import (
+    build_compliance_gap_analysis,
+    validation_documents,
+)
 from steps.models.extracted_file import ExtractedFile
 from steps.models.output import Executor_Output, Workflow_Output
 
@@ -147,6 +151,7 @@ class GapExecutor(Executor):
             return
 
         processed_files: list[ExtractedFile] = []
+        processed_documents: list[tuple[str, dict]] = []
 
         for document in document_results:
             if document["status"] != 302:
@@ -154,12 +159,32 @@ class GapExecutor(Executor):
             process_id = document.get("process_id")
             processed_output = await self.fetch_processed_result(process_id)
             if processed_output:
+                processed_documents.append((document["file_name"], processed_output))
                 extracted_file = ExtractedFile(
                     file_name=document["file_name"],
                     mime_type=document["mime_type"],
                     extracted_content=json.dumps(processed_output),
                 )
                 processed_files.append(extracted_file)
+
+        compliance_documents = validation_documents(processed_documents)
+        if compliance_documents:
+            gap_report = build_compliance_gap_analysis(compliance_documents)
+            claim_process_repository = self.app_context.get_service(Claim_Processes)
+            await claim_process_repository.Update_Claim_Process_Gaps(
+                process_id=result.claim_process_id,
+                new_gaps=gap_report,
+            )
+            gap_result = {"status": "gap_processed", "output": gap_report}
+            result.workflow_process_outputs.append(
+                Executor_Output(
+                    step_name="gap_analysis",
+                    output_data=gap_result,
+                )
+            )
+            ctx.set_state("workflow_output", result)
+            await ctx.yield_output(result)
+            return
 
         agent_framework_helper = self.app_context.get_service(AgentFrameworkHelper)
         agent_client = await agent_framework_helper.get_client_async("default")

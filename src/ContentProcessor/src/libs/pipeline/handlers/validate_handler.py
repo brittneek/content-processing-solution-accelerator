@@ -68,6 +68,7 @@ class ValidateHandler(HandlerBase):
             validation = RuleEvaluator().evaluate(
                 evaluated_result.extracted_result,
                 rule_set,
+                evaluated_result.confidence,
             )
             extracted_json = self.download_output_file_to_json_string(
                 processed_by="extract",

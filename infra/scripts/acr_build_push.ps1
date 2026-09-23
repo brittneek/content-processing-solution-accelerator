@@ -126,6 +126,24 @@ $DeploymentType = az group show `
 # Get the script directory and navigate to repo root
 $ScriptDir = $PSScriptRoot
 $RepoRoot = (Resolve-Path (Join-Path $ScriptDir "../..")).Path
+
+function Get-CompatibleRelativePath {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$BasePath,
+        [Parameter(Mandatory = $true)]
+        [string]$TargetPath
+    )
+
+    $BaseFullPath = [System.IO.Path]::GetFullPath($BasePath).TrimEnd('\') + '\'
+    $TargetFullPath = [System.IO.Path]::GetFullPath($TargetPath)
+    $BaseUri = New-Object System.Uri($BaseFullPath)
+    $TargetUri = New-Object System.Uri($TargetFullPath)
+
+    return [System.Uri]::UnescapeDataString(
+        $BaseUri.MakeRelativeUri($TargetUri).ToString()
+    ).Replace('/', '\')
+}
  
 Write-Host ""
 Write-Host "  ACR Name: $ACR_NAME"
@@ -144,8 +162,8 @@ function Build-Image {
         [string]$BuildContext
     )
 
-    $ContextPath = [System.IO.Path]::GetRelativePath($RepoRoot, $BuildContext)
-    $DockerfilePath = [System.IO.Path]::GetRelativePath($BuildContext, $Dockerfile)
+    $ContextPath = Get-CompatibleRelativePath -BasePath $RepoRoot -TargetPath $BuildContext
+    $DockerfilePath = Get-CompatibleRelativePath -BasePath $BuildContext -TargetPath $Dockerfile
     $StagingDirectory = Join-Path ([System.IO.Path]::GetTempPath()) "acr-build-$([guid]::NewGuid())"
     New-Item -ItemType Directory -Path $StagingDirectory | Out-Null
 
@@ -159,7 +177,9 @@ function Build-Image {
         if ($LASTEXITCODE -ne 0) { throw "Failed to collect build context for $ImageName" }
 
         foreach ($SourceFile in $SourceFiles) {
-            $StagedFile = [System.IO.Path]::GetRelativePath($ContextPath, $SourceFile)
+            $StagedFile = Get-CompatibleRelativePath `
+                -BasePath $BuildContext `
+                -TargetPath (Join-Path $RepoRoot $SourceFile)
             $Destination = Join-Path $StagingDirectory $StagedFile
             $DestinationDirectory = Split-Path -Parent $Destination
             New-Item -ItemType Directory -Path $DestinationDirectory -Force | Out-Null

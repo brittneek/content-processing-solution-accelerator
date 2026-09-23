@@ -17,7 +17,11 @@ from typing import Literal
 from agent_framework import Content, Message
 from pdf2image import convert_from_bytes
 
-from libs.agent_framework.agent_builder import AgentBuilder, is_reasoning_model, resolve_model_name
+from libs.agent_framework.agent_builder import (
+    AgentBuilder,
+    is_reasoning_model,
+    resolve_model_name,
+)
 from libs.agent_framework.agent_framework_helper import AgentFrameworkHelper
 from libs.agent_framework.azure_openai_response_retry import ContextTrimConfig
 from libs.application.application_context import AppContext
@@ -36,8 +40,10 @@ logger = logging.getLogger(__name__)
 # Image configuration — tuneable via environment variables
 # ---------------------------------------------------------------------------
 #: Maximum number of page images to include in the prompt.
-#: Set MAP_MAX_IMAGES=0 to include all pages (default: 0 = unlimited / 50 = GPT 5.1 max image number).
-MAP_MAX_IMAGES: int = int(os.getenv("MAP_MAX_IMAGES", "50"))
+#: Content Understanding already supplies the full document text, so one page
+#: image is sufficient as visual context without creating an oversized request.
+#: Set MAP_MAX_IMAGES=0 to include all pages.
+MAP_MAX_IMAGES: int = int(os.getenv("MAP_MAX_IMAGES", "1"))
 
 #: Image detail level sent to GPT vision ("low", "high", or "auto").
 #: "low" uses fewer tokens; "high" gives better accuracy but costs more.
@@ -54,13 +60,18 @@ MAP_IMAGE_QUALITY: int = int(os.getenv("MAP_IMAGE_QUALITY", "85"))
 
 #: Whether context trimming is disabled for the map handler.
 #: Set MAP_DISABLE_TRIM=true to send the full request without truncation.
-MAP_DISABLE_TRIM: bool = os.getenv("MAP_DISABLE_TRIM", "true").strip().lower() in (
+MAP_DISABLE_TRIM: bool = os.getenv("MAP_DISABLE_TRIM", "false").strip().lower() in (
     "1",
     "true",
     "yes",
     "y",
     "on",
 )
+
+#: Structured extraction benefits more from timely schema-constrained output
+#: than extended reasoning. High reasoning can exceed the Azure gateway
+#: duration for comprehensive schemas.
+MAP_REASONING_EFFORT: str = os.getenv("MAP_REASONING_EFFORT", "low").strip().lower()
 
 
 class MapHandler(HandlerBase):
@@ -101,6 +112,7 @@ class MapHandler(HandlerBase):
 
             pdf_stream = io.BytesIO(pdf_bytes)
             images = convert_from_bytes(pdf_stream.read())
+            total_image_count = len(images)
 
             # Optionally limit the number of page images included
             if MAP_MAX_IMAGES > 0:
@@ -109,7 +121,7 @@ class MapHandler(HandlerBase):
                     "MAP_MAX_IMAGES=%d — using first %d of %d page images",
                     MAP_MAX_IMAGES,
                     len(images),
-                    len(convert_from_bytes(pdf_stream.getvalue())),
+                    total_image_count,
                 )
 
             mime_type = "image/jpeg" if MAP_IMAGE_FORMAT == "JPEG" else "image/png"
@@ -249,9 +261,7 @@ Return ONLY valid JSON matching this schema:
             .with_temperature(0.1)
             .with_top_p(0.1)
             .with_response_format(schema_class)
-            .with_additional_chat_options({
-                "reasoning_effort": "high"
-            })
+            .with_additional_chat_options({"reasoning_effort": MAP_REASONING_EFFORT})
             .build()
         )
 
@@ -351,10 +361,12 @@ Return ONLY valid JSON matching this schema:
             artifact_type=ArtifactType.SchemaMappedData,
         )
         result_file.log_entries.append(
-            PipelineLogEntry(**{
-                "source": self.handler_name,
-                "message": "GPT Extraction Result has been added",
-            })
+            PipelineLogEntry(
+                **{
+                    "source": self.handler_name,
+                    "message": "GPT Extraction Result has been added",
+                }
+            )
         )
         result_file.upload_json_text(
             account_url=self.application_context.configuration.app_storage_blob_url,
@@ -399,13 +411,15 @@ Return ONLY valid JSON matching this schema:
         Prepare the prompt for the model.
         """
         user_content = []
-        user_content.append({
-            "type": "text",
-            "text": """Extract the data from this Document.
+        user_content.append(
+            {
+                "type": "text",
+                "text": """Extract the data from this Document.
             - If a value is not present, provide null.
             - Some values must be inferred based on the rules defined in the policy and Contents.
             - Dates should be in the format YYYY-MM-DD.""",
-        })
+            }
+        )
 
         user_content.append({"type": "text", "text": markdown_string})
 

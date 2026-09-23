@@ -98,6 +98,25 @@ class DocumentProcessExecutor(Executor):
         super().__init__(id=id)
         self.app_context = app_context
 
+    @staticmethod
+    def _ensure_documents_completed(document_results: list[dict]) -> None:
+        failures = [
+            result
+            for result in document_results
+            if result.get("final_status") != "Completed"
+        ]
+        if not failures:
+            return
+
+        details = "; ".join(
+            (
+                f"{result.get('file_name', '<unknown>')}: "
+                f"{result.get('final_status') or result.get('status', 'Failed')}"
+            )
+            for result in failures
+        )
+        raise RuntimeError(f"Document processing did not complete: {details}")
+
     @handler
     async def handle_execute(
         self,
@@ -236,11 +255,18 @@ class DocumentProcessExecutor(Executor):
                     poll_result = await content_process_service.poll_status(
                         process_id=process_id,
                         poll_interval_seconds=poll_interval_seconds,
-                        timeout_seconds=600.0,
+                        timeout_seconds=float(
+                            getattr(
+                                self.app_context.configuration,
+                                "app_cps_poll_timeout_seconds",
+                                1800.0,
+                            )
+                        ),
                         on_poll=_on_poll,
                     )
 
                     status_text = poll_result.get("status", "Failed")
+                    poll_timed_out = status_text == "Timeout"
 
                     # Failed / not-yet-scored documents default to ``0.0``;
                     # save_handler always emits numeric scores for Completed
@@ -256,7 +282,8 @@ class DocumentProcessExecutor(Executor):
                             process_id
                         )
                         if isinstance(final_payload, dict):
-                            status_text = final_payload.get("status") or status_text
+                            if not poll_timed_out:
+                                status_text = final_payload.get("status") or status_text
 
                             def _coerce_score(value: object) -> float:
                                 """Coerce a raw score payload to ``float`` (default ``0.0``)."""
@@ -300,7 +327,7 @@ class DocumentProcessExecutor(Executor):
                     # Map to HTTP-like code for downstream compatibility
                     if status_text == "Completed":
                         status_code = 302
-                    elif status_text in ("Error", "Failed"):
+                    elif status_text in ("Error", "Failed", "Timeout"):
                         status_code = 500
                     else:
                         status_code = 200
@@ -331,6 +358,7 @@ class DocumentProcessExecutor(Executor):
                 tasks.append(tg.create_task(_process_one(item)))
 
         document_results.extend([t.result() for t in tasks])
+        self._ensure_documents_completed(document_results)
 
         processed_document = {
             "status": "processed",

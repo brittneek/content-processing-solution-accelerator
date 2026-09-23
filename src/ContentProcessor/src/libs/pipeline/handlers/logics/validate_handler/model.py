@@ -21,6 +21,17 @@ class ValidationStatus(StrEnum):
     ERROR = "error"
 
 
+class ComplianceStatus(StrEnum):
+    """Reviewer-facing interpretation of one requirement."""
+
+    COMPLIANT = "compliant"
+    PARTIALLY_COMPLIANT = "partially_compliant"
+    NONCOMPLIANT = "noncompliant"
+    UNDETERMINED = "undetermined"
+    NOT_APPLICABLE = "not_applicable"
+    REVIEW_REQUIRED = "review_required"
+
+
 class RuleOperator(StrEnum):
     """Operators supported by the generic evaluator."""
 
@@ -34,6 +45,17 @@ class RuleOperator(StrEnum):
     CONTAINS_ALL = "contains_all"
     ONE_OF = "one_of"
     REGEX = "regex"
+
+
+class RuleCondition(BaseModel):
+    """Generic prerequisite that determines whether a rule applies."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    path: str = Field(min_length=1)
+    operator: RuleOperator
+    expected: Any = None
+    exclusive: bool = False
 
 
 class RuleDefinition(BaseModel):
@@ -50,6 +72,7 @@ class RuleDefinition(BaseModel):
     unit: str | None = None
     exclusive: bool = False
     message: str | None = None
+    when: list[RuleCondition] = Field(default_factory=list)
 
 
 class EntityDefinition(BaseModel):
@@ -60,6 +83,8 @@ class EntityDefinition(BaseModel):
     id: str = Field(min_length=1)
     name: str = Field(min_length=1)
     section: str = Field(min_length=1)
+    baseline: str | None = None
+    minimum_confidence: float | None = Field(default=None, ge=0, le=1)
     source_text_path: str | None = None
     source_page_path: str | None = None
     rules: list[RuleDefinition] = Field(min_length=1)
@@ -76,6 +101,7 @@ class RuleSetDefinition(BaseModel):
     version: str = Field(min_length=1)
     status: Literal["draft", "active", "retired"] = "draft"
     description: str | None = None
+    minimum_confidence: float | None = Field(default=None, ge=0, le=1)
     entities: list[EntityDefinition] = Field(min_length=1)
 
 
@@ -114,6 +140,12 @@ class EntityValidationResult(BaseModel):
     name: str
     section: str
     status: ValidationStatus
+    compliance_status: ComplianceStatus
+    baseline: str
+    extracted_value: Any = None
+    confidence: float | None = Field(default=None, ge=0, le=1)
+    minimum_confidence: float | None = Field(default=None, ge=0, le=1)
+    justification: str
     source_text: str | None = None
     source_page: int | None = None
     evidence_match_type: Literal["exact", "contains", "fuzzy", "not_found"] = (
@@ -132,6 +164,12 @@ class ValidationSummary(BaseModel):
     missing: int = 0
     not_applicable: int = 0
     errors: int = 0
+    compliant: int = 0
+    partially_compliant: int = 0
+    noncompliant: int = 0
+    undetermined: int = 0
+    compliance_not_applicable: int = 0
+    review_required: int = 0
 
 
 class ValidationResult(BaseModel):
@@ -139,5 +177,6 @@ class ValidationResult(BaseModel):
 
     rule_set_id: str
     rule_set_version: str
+    overall_status: ComplianceStatus
     summary: ValidationSummary
     entities: list[EntityValidationResult]

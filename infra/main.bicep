@@ -75,6 +75,9 @@ param gptDeploymentCapacity int = 300
 @description('Optional. Enable WAF for the deployment.')
 param enablePrivateNetworking bool = false
 
+@description('Optional. Deploy the Bastion host and jumpbox VM used for private-network administration.')
+param enableJumpbox bool = true
+
 @description('Optional. Enable/Disable usage telemetry for module.')
 param enableTelemetry bool = true
 
@@ -187,7 +190,7 @@ module virtualNetwork './modules/virtualNetwork.bicep' = if (enablePrivateNetwor
 
 // Azure Bastion Host
 var bastionHostName = 'bas-${solutionSuffix}'
-module bastionHost 'br/public:avm/res/network/bastion-host:0.8.2' = if (enablePrivateNetworking) {
+module bastionHost 'br/public:avm/res/network/bastion-host:0.8.2' = if (enablePrivateNetworking && enableJumpbox) {
   name: take('avm.res.network.bastion-host.${bastionHostName}', 64)
   params: {
     name: bastionHostName
@@ -220,7 +223,7 @@ module bastionHost 'br/public:avm/res/network/bastion-host:0.8.2' = if (enablePr
 
 // Jumpbox Virtual Machine
 var jumpboxVmName = take('vm-${solutionSuffix}', 15)
-module jumpboxVM 'br/public:avm/res/compute/virtual-machine:0.22.0' = if (enablePrivateNetworking) {
+module jumpboxVM 'br/public:avm/res/compute/virtual-machine:0.22.0' = if (enablePrivateNetworking && enableJumpbox) {
   name: take('avm.res.compute.virtual-machine.${jumpboxVmName}', 64)
   params: {
     name: jumpboxVmName
@@ -320,7 +323,7 @@ module jumpboxVM 'br/public:avm/res/compute/virtual-machine:0.22.0' = if (enable
   }
 }
 
-module maintenanceConfiguration 'br/public:avm/res/maintenance/maintenance-configuration:0.4.0' = if (enablePrivateNetworking) {
+module maintenanceConfiguration 'br/public:avm/res/maintenance/maintenance-configuration:0.4.0' = if (enablePrivateNetworking && enableJumpbox) {
   name: take('avm.res.maintenance-configuration.${jumpboxVmName}', 64)
   params: {
     name: 'mc-${jumpboxVmName}'
@@ -360,7 +363,7 @@ var dataCollectionRulesResourceName = 'dcr-${solutionSuffix}'
 var dataCollectionRulesLocation = logAnalyticsWorkspace!.outputs.location
 var logAnalyticsWorkspaceResourceName = 'log-${solutionSuffix}'
 var dcrLogAnalyticsDestinationName = 'la-${logAnalyticsWorkspaceResourceName}-destination'
-module windowsVmDataCollectionRules 'br/public:avm/res/insights/data-collection-rule:0.11.0' = if (enablePrivateNetworking && enableMonitoring) {
+module windowsVmDataCollectionRules 'br/public:avm/res/insights/data-collection-rule:0.11.0' = if (enablePrivateNetworking && enableJumpbox && enableMonitoring) {
   name: take('avm.res.insights.data-collection-rule.${dataCollectionRulesResourceName}', 64)
   params: {
     name: dataCollectionRulesResourceName
@@ -928,6 +931,26 @@ module avmContainerApp 'br/public:avm/res/app/container-app:0.22.1' = {
             name: 'OTEL_SERVICE_NAME'
             value: 'ContentProcessor'
           }
+          {
+            name: 'MAP_MAX_IMAGES'
+            value: '1'
+          }
+          {
+            name: 'MAP_IMAGE_DETAIL'
+            value: 'low'
+          }
+          {
+            name: 'MAP_IMAGE_QUALITY'
+            value: '70'
+          }
+          {
+            name: 'MAP_DISABLE_TRIM'
+            value: 'false'
+          }
+          {
+            name: 'MAP_REASONING_EFFORT'
+            value: 'low'
+          }
         ]
       }
     ]
@@ -1156,6 +1179,10 @@ module avmContainerApp_Web 'br/public:avm/res/app/container-app:0.22.1' = {
           {
             name: 'APP_POST_REDIRECT_URL'
             value: '/'
+          }
+          {
+            name: 'APP_AUTH_ENABLED'
+            value: 'false'
           }
           {
             name: 'APP_CONSOLE_LOG_ENABLED'
@@ -1443,6 +1470,10 @@ module avmAppConfig 'br/public:avm/res/app-configuration/configuration-store:0.9
         value: '3'
       }
       {
+        name: 'APP_CPS_POLL_TIMEOUT_SECONDS'
+        value: '1800'
+      }
+      {
         name: 'APP_STORAGE_ACCOUNT_NAME'
         value: avmStorageAccount.outputs.name
       }
@@ -1609,6 +1640,26 @@ module avmContainerApp_update 'br/public:avm/res/app/container-app:0.22.1' = {
           {
             name: 'OTEL_SERVICE_NAME'
             value: 'ContentProcessor'
+          }
+          {
+            name: 'MAP_MAX_IMAGES'
+            value: '1'
+          }
+          {
+            name: 'MAP_IMAGE_DETAIL'
+            value: 'low'
+          }
+          {
+            name: 'MAP_IMAGE_QUALITY'
+            value: '70'
+          }
+          {
+            name: 'MAP_DISABLE_TRIM'
+            value: 'false'
+          }
+          {
+            name: 'MAP_REASONING_EFFORT'
+            value: 'low'
           }
         ]
       }

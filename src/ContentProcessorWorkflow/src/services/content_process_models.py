@@ -31,6 +31,7 @@ class PipelineStep(str, Enum):
     Extract = "extract"
     Mapping = "map"
     Evaluating = "evaluate"
+    Validating = "validate"
     Save = "save"
 
 

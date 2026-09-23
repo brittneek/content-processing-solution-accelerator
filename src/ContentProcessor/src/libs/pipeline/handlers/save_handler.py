@@ -10,6 +10,8 @@ to blob storage.
 
 import datetime
 import json
+import logging
+from typing import ClassVar
 
 from libs.application.application_context import AppContext
 from libs.models.content_process import ContentProcess, Step_Outputs
@@ -21,6 +23,8 @@ from libs.pipeline.entities.schema import Schema
 from libs.pipeline.handlers.logics.evaluate_handler.model import DataExtractionResult
 from libs.pipeline.queue_handler_base import HandlerBase
 
+logger = logging.getLogger(__name__)
+
 
 class SaveHandler(HandlerBase):
     """Pipeline step that persists final extraction results.
@@ -31,6 +35,15 @@ class SaveHandler(HandlerBase):
         3. Write the ContentProcess record to Cosmos DB.
         4. Save step-output history to blob storage.
     """
+
+    COSMOS_SAFE_DOCUMENT_SIZE_BYTES: ClassVar[int] = 1_800_000
+    EXTERNALIZED_RESULT_COMMENT: ClassVar[str] = (
+        "The full extraction result is stored in the process Blob Storage artifact "
+        "because the Cosmos DB record exceeded the document size limit."
+    )
+    COSMOS_SOURCE_TEXT_PREVIEW_CHARS: ClassVar[int] = 2_000
+    COSMOS_EXTRACTED_VALUE_PREVIEW_CHARS: ClassVar[int] = 5_000
+    COSMOS_RULE_VALUE_PREVIEW_CHARS: ClassVar[int] = 1_000
 
     def __init__(self, appContext: AppContext, step_name: str, **data):
         super().__init__(appContext, step_name, **data)
@@ -160,7 +173,7 @@ class SaveHandler(HandlerBase):
             imported_time=datetime.datetime.strptime(
                 self._current_message_context.data_pipeline.pipeline_status.creation_time,
                 "%Y-%m-%dT%H:%M:%S.%fZ",
-            ),
+            ).replace(tzinfo=datetime.UTC),
             entity_score=entity_score,
             schema_score=schema_score,
             min_extracted_entity_score=min_extracted_entity_score,
@@ -178,8 +191,27 @@ class SaveHandler(HandlerBase):
             comment="",
         )
 
-        # Save Result to Cosmos DB
-        processed_result.update_status_to_cosmos(
+        # Save the complete result to Blob Storage before creating the bounded
+        # Cosmos representation. Comprehensive schemas can otherwise exceed
+        # Cosmos DB's 2 MB document limit because result, confidence,
+        # comparison, and validation payloads contain overlapping evidence.
+        result_file = context.data_pipeline.add_file(
+            file_name="save_output.json", artifact_type=ArtifactType.SavedContent
+        )
+        result_file.log_entries.append(
+            PipelineLogEntry(
+                source=self.handler_name,
+                message="Save Result has been added",
+            )
+        )
+        result_file.upload_json_text(
+            account_url=self.application_context.configuration.app_storage_blob_url,
+            container_name=self.application_context.configuration.app_cps_processes,
+            text=processed_result.model_dump_json(),
+        )
+
+        cosmos_result = self._compact_for_cosmos(processed_result)
+        cosmos_result.update_status_to_cosmos(
             connection_string=self.application_context.configuration.app_cosmos_connstr,
             database_name=self.application_context.configuration.app_cosmos_database,
             collection_name=self.application_context.configuration.app_cosmos_container_process,
@@ -190,31 +222,15 @@ class SaveHandler(HandlerBase):
             file_name="step_outputs.json", artifact_type=ArtifactType.SavedContent
         )
         processed_history.log_entries.append(
-            PipelineLogEntry(**{
-                "source": self.handler_name,
-                "message": "Process Output has been added. this file should be deserialized to Step_Outputs[]",
-            })
+            PipelineLogEntry(
+                source=self.handler_name,
+                message="Process Output has been added. this file should be deserialized to Step_Outputs[]",
+            )
         )
         processed_history.upload_json_text(
             account_url=self.application_context.configuration.app_storage_blob_url,
             container_name=self.application_context.configuration.app_cps_processes,
             text=json.dumps([step.model_dump() for step in process_outputs]),
-        )
-
-        # Save Result as a file
-        result_file = context.data_pipeline.add_file(
-            file_name="save_output.json", artifact_type=ArtifactType.SavedContent
-        )
-        result_file.log_entries.append(
-            PipelineLogEntry(**{
-                "source": self.handler_name,
-                "message": "Save Result has been added",
-            })
-        )
-        result_file.upload_json_text(
-            account_url=self.application_context.configuration.app_storage_blob_url,
-            container_name=self.application_context.configuration.app_cps_processes,
-            text=processed_result.model_dump_json(),
         )
 
         # Console out
@@ -226,6 +242,170 @@ class SaveHandler(HandlerBase):
             process_id=context.data_pipeline.pipeline_status.process_id,
             step_name=self.handler_name,
             result={"result": result_file.name},
+        )
+
+    @staticmethod
+    def _serialized_size_bytes(processed_result: ContentProcess) -> int:
+        return len(processed_result.model_dump_json().encode("utf-8"))
+
+    @staticmethod
+    def _strip_confidence_values(value):
+        """Remove extracted-value copies while retaining confidence scores."""
+        if isinstance(value, dict):
+            return {
+                key: SaveHandler._strip_confidence_values(child)
+                for key, child in value.items()
+                if key != "value"
+            }
+        if isinstance(value, list):
+            return [SaveHandler._strip_confidence_values(child) for child in value]
+        return value
+
+    @staticmethod
+    def _preview_value(value, max_chars: int):
+        """Return a bounded JSON-compatible preview for oversized evidence."""
+        if value is None:
+            return None
+        if isinstance(value, str):
+            if len(value) <= max_chars:
+                return value
+            return f"{value[:max_chars]}... [full value stored in Blob Storage]"
+
+        serialized = json.dumps(value, ensure_ascii=False, default=str)
+        if len(serialized) <= max_chars:
+            return value
+        return {
+            "externalized": True,
+            "preview": serialized[:max_chars],
+            "message": "Full value stored in Blob Storage.",
+        }
+
+    @classmethod
+    def _compact_for_cosmos(cls, processed_result: ContentProcess) -> ContentProcess:
+        """Return a Cosmos-safe copy while the full result remains in Blob Storage."""
+        compacted = processed_result.model_copy(deep=True)
+
+        def within_limit() -> bool:
+            return (
+                cls._serialized_size_bytes(compacted)
+                <= cls.COSMOS_SAFE_DOCUMENT_SIZE_BYTES
+            )
+
+        if within_limit():
+            return compacted
+
+        original_size = cls._serialized_size_bytes(compacted)
+        compacted.confidence = cls._strip_confidence_values(compacted.confidence)
+        if within_limit():
+            logger.warning(
+                "Compacted oversized Cosmos process record from %s to %s bytes "
+                "by removing duplicated confidence values.",
+                original_size,
+                cls._serialized_size_bytes(compacted),
+            )
+            return compacted
+
+        compacted.target_schema = None
+        if within_limit():
+            logger.warning(
+                "Compacted oversized Cosmos process record from %s to %s bytes "
+                "by externalizing schema metadata.",
+                original_size,
+                cls._serialized_size_bytes(compacted),
+            )
+            return compacted
+
+        if compacted.extracted_comparison_data is not None:
+            for item in compacted.extracted_comparison_data.items:
+                item.Extracted = None
+        if within_limit():
+            logger.warning(
+                "Compacted oversized Cosmos process record from %s to %s bytes "
+                "by removing duplicated comparison values.",
+                original_size,
+                cls._serialized_size_bytes(compacted),
+            )
+            return compacted
+
+        if isinstance(compacted.validation_result, dict):
+            for entity in compacted.validation_result.get("entities", []):
+                for rule in entity.get("rule_results", []):
+                    rule["actual"] = cls._preview_value(
+                        rule.get("actual"),
+                        cls.COSMOS_RULE_VALUE_PREVIEW_CHARS,
+                    )
+                    rule["expected"] = cls._preview_value(
+                        rule.get("expected"),
+                        cls.COSMOS_RULE_VALUE_PREVIEW_CHARS,
+                    )
+        if within_limit():
+            logger.warning(
+                "Compacted oversized Cosmos process record from %s to %s bytes "
+                "by removing duplicated rule-level values.",
+                original_size,
+                cls._serialized_size_bytes(compacted),
+            )
+            return compacted
+
+        if isinstance(compacted.validation_result, dict):
+            for entity in compacted.validation_result.get("entities", []):
+                entity["source_regions"] = []
+                entity["source_text"] = cls._preview_value(
+                    entity.get("source_text"),
+                    cls.COSMOS_SOURCE_TEXT_PREVIEW_CHARS,
+                )
+                entity["extracted_value"] = cls._preview_value(
+                    entity.get("extracted_value"),
+                    cls.COSMOS_EXTRACTED_VALUE_PREVIEW_CHARS,
+                )
+        if within_limit():
+            logger.warning(
+                "Compacted oversized Cosmos process record from %s to %s bytes "
+                "by bounding validation evidence.",
+                original_size,
+                cls._serialized_size_bytes(compacted),
+            )
+            return compacted
+
+        compacted.result = None
+        compacted.comment = cls.EXTERNALIZED_RESULT_COMMENT
+        if within_limit():
+            logger.warning(
+                "Compacted oversized Cosmos process record from %s to %s bytes "
+                "by externalizing the extraction result.",
+                original_size,
+                cls._serialized_size_bytes(compacted),
+            )
+            return compacted
+
+        compacted.confidence = None
+        compacted.extracted_comparison_data = None
+        if within_limit():
+            logger.warning(
+                "Compacted oversized Cosmos process record from %s to %s bytes "
+                "by externalizing detailed confidence and comparison data.",
+                original_size,
+                cls._serialized_size_bytes(compacted),
+            )
+            return compacted
+
+        if isinstance(compacted.validation_result, dict):
+            for entity in compacted.validation_result.get("entities", []):
+                entity["source_text"] = None
+                entity["extracted_value"] = None
+        if within_limit():
+            logger.warning(
+                "Compacted oversized Cosmos process record from %s to %s bytes "
+                "by externalizing validation evidence values.",
+                original_size,
+                cls._serialized_size_bytes(compacted),
+            )
+            return compacted
+
+        compacted_size = cls._serialized_size_bytes(compacted)
+        raise ValueError(
+            "The compacted process result is still too large for Cosmos DB "
+            f"({compacted_size} bytes). The complete result is available in Blob Storage."
         )
 
     def _summarize_processed_time(self, step_results: list[StepResult]) -> str:
@@ -306,9 +486,7 @@ class SaveHandler(HandlerBase):
            ``0%`` for failures and genuine zeros.
         """
         confidence = evaluated_result.confidence or {}
-        total_evaluated_fields_count = confidence.get(
-            "total_evaluated_fields_count", 0
-        )
+        total_evaluated_fields_count = confidence.get("total_evaluated_fields_count", 0)
         comparison_items = (
             evaluated_result.comparison_result.items
             if evaluated_result.comparison_result is not None

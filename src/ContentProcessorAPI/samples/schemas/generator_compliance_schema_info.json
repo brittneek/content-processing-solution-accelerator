@@ -1,0 +1,14 @@
+{
+  "schemas": [
+    {
+      "File": "generator_spec_compliance_analyzer.json",
+      "RulesFile": "../rules/generator_spec_compliance.rules.yaml",
+      "ClassName": "GeneratorSpecComplianceAnalyzer",
+      "Description": "Comprehensive generator specification extraction and deterministic compliance validation"
+    }
+  ],
+  "schemaset": {
+    "Name": "Generator Compliance Analyzer",
+    "Description": "Comprehensive engine, fuel-system, environmental, and document metadata requirements"
+  }
+}

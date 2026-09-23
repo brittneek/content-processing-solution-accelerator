@@ -17,7 +17,7 @@ import random
 from dataclasses import dataclass
 from typing import Any, MutableSequence
 
-from agent_framework.openai import OpenAIChatCompletionClient, OpenAIChatClient
+from agent_framework.openai import OpenAIChatClient, OpenAIChatCompletionClient
 from tenacity import (
     AsyncRetrying,
     retry_if_exception,
@@ -104,9 +104,56 @@ def _looks_like_access_check_challenge(error: BaseException) -> bool:
     return False
 
 
+def _looks_like_connection_error(error: BaseException) -> bool:
+    """Detect transport failures that are safe to retry at the request boundary."""
+    error_name = type(error).__name__.lower()
+    message = str(error).lower()
+    if any(
+        marker in error_name
+        for marker in (
+            "apiconnectionerror",
+            "connecterror",
+            "connectionerror",
+            "remotedisconnected",
+            "serviceresponseerror",
+        )
+    ):
+        return True
+    if any(
+        marker in message
+        for marker in (
+            "connection error",
+            "connection aborted",
+            "connection reset",
+            "remote end closed connection",
+            "server disconnected",
+        )
+    ):
+        return True
+
+    status = getattr(error, "status_code", None) or getattr(error, "status", None)
+    if status in (408, 502, 503, 504):
+        return True
+
+    for attr in ("__cause__", "__context__", "inner_exception"):
+        inner = getattr(error, attr, None)
+        if (
+            isinstance(inner, BaseException)
+            and inner is not error
+            and _looks_like_connection_error(inner)
+        ):
+            return True
+
+    return False
+
+
 def _is_transient_error(error: BaseException) -> bool:
-    """Return True for errors that should be retried (rate-limit or access-check challenge)."""
-    return _looks_like_rate_limit(error) or _looks_like_access_check_challenge(error)
+    """Return True for errors that should be retried at the request boundary."""
+    return (
+        _looks_like_rate_limit(error)
+        or _looks_like_access_check_challenge(error)
+        or _looks_like_connection_error(error)
+    )
 
 
 def _looks_like_context_length(error: BaseException) -> bool:

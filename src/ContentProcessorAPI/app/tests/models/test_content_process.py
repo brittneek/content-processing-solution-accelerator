@@ -59,12 +59,19 @@ class TestContentProcessValidators:
             validation_result={
                 "rule_set_id": "generator-global",
                 "rule_set_version": "0.1.0",
+                "overall_status": "compliant",
                 "summary": {
                     "passed": 1,
                     "failed": 0,
                     "missing": 0,
                     "not_applicable": 0,
                     "errors": 0,
+                    "compliant": 1,
+                    "partially_compliant": 0,
+                    "noncompliant": 0,
+                    "undetermined": 0,
+                    "compliance_not_applicable": 0,
+                    "review_required": 0,
                 },
                 "entities": [
                     {
@@ -72,6 +79,14 @@ class TestContentProcessValidators:
                         "name": "Engine type",
                         "section": "Engine",
                         "status": "pass",
+                        "compliance_status": "compliant",
+                        "baseline": "The engine must be four-cycle.",
+                        "extracted_value": ["four_cycle"],
+                        "confidence": 0.96,
+                        "minimum_confidence": 0.6,
+                        "justification": (
+                            "The extracted evidence satisfies the baseline."
+                        ),
                         "source_text": "Four-cycle diesel engine",
                         "source_page": 4,
                         "evidence_match_type": "exact",
@@ -105,8 +120,16 @@ class TestContentProcessValidators:
         )
 
         assert isinstance(process.validation_result, ValidationResult)
+        assert process.validation_result.overall_status == "compliant"
+        assert (
+            process.validation_result.entities[0].compliance_status
+            == "compliant"
+        )
         assert process.validation_result.entities[0].source_page == 4
-        assert process.validation_result.entities[0].source_regions[0].polygon[0].x == 0.1
+        first_point = (
+            process.validation_result.entities[0].source_regions[0].polygon[0]
+        )
+        assert first_point.x == 0.1
 
     def test_skipped_validation_result_is_typed(self):
         process = ContentProcess(

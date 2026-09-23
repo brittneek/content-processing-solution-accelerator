@@ -175,6 +175,11 @@ class Configuration(_configuration_base):
         alias="APP_CPS_POLL_INTERVAL_SECONDS",
         description="Polling interval (seconds) used when Retry-After is not present",
     )
+    app_cps_poll_timeout_seconds: float = Field(
+        default=1800.0,
+        alias="APP_CPS_POLL_TIMEOUT_SECONDS",
+        description="Maximum seconds to wait for one document pipeline.",
+    )
     app_rai_enabled: bool = Field(
         default=True,
         alias="APP_RAI_ENABLED",

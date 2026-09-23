@@ -40,6 +40,7 @@ class TestPipelineStep:
         assert PipelineStep.Extract == "extract"
         assert PipelineStep.Mapping == "map"
         assert PipelineStep.Evaluating == "evaluate"
+        assert PipelineStep.Validating == "validate"
         assert PipelineStep.Save == "save"
 
     def test_is_str_enum(self):

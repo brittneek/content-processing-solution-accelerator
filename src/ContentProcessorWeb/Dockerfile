@@ -11,7 +11,7 @@ COPY package.json pnpm-lock.yaml .npmrc ./
 RUN npm install -g --registry=https://packagefeedproxy.microsoft.io/npm/ pnpm@10.28.2
 
 # Install project dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --reporter=append-only
 
 # Copy the rest of the application code
 COPY . .

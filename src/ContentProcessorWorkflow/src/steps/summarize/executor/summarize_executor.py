@@ -25,6 +25,10 @@ from libs.agent_framework.agent_framework_helper import AgentFrameworkHelper
 from libs.application.application_context import AppContext
 from repositories.claim_processes import Claim_Processes
 from services.content_process_service import ContentProcessService
+from steps.compliance_reporting import (
+    build_compliance_summary,
+    validation_documents,
+)
 from steps.models.extracted_file import ExtractedFile
 from steps.models.output import Executor_Output, Workflow_Output
 
@@ -128,11 +132,15 @@ class SummarizeExecutor(Executor):
             return
 
         processed_files: list[ExtractedFile] = []
+        processed_documents: list[tuple[str, dict]] = []
         for document in document_results:
             if document["status"] != 302:
                 continue  # Skip documents that were not processed successfully
+            process_id = document.get("process_id")
+            processed_result = await self.fetch_processed_result(process_id)
+            if processed_result:
+                processed_documents.append((document["file_name"], processed_result))
             if document["mime_type"] == "application/pdf":
-                process_id = document.get("process_id")
                 processed_output = await self.fetch_processed_steps_result(process_id)
                 if processed_output:
                     for step in processed_output:
@@ -146,7 +154,6 @@ class SummarizeExecutor(Executor):
                             processed_files.append(extracted_file)
 
             elif document["mime_type"] in ["image/png", "image/jpg", "image/jpeg"]:
-                process_id = document.get("process_id")
                 processed_output = await self.fetch_processed_steps_result(process_id)
                 if processed_output:
                     for step in processed_output:
@@ -161,6 +168,25 @@ class SummarizeExecutor(Executor):
                                 ]["content"],
                             )
                             processed_files.append(extracted_file)
+
+        compliance_documents = validation_documents(processed_documents)
+        if compliance_documents:
+            summary = build_compliance_summary(compliance_documents)
+            summarized_result = {"status": "summarized", "input": summary}
+            claim_process_repository = self.app_context.get_service(Claim_Processes)
+            await claim_process_repository.Update_Claim_Process_Summary(
+                process_id=result.claim_process_id,
+                new_summary=summary,
+            )
+            result.workflow_process_outputs.append(
+                Executor_Output(
+                    step_name="summarizing",
+                    output_data=summarized_result,
+                )
+            )
+            ctx.set_state("workflow_output", result)
+            await ctx.send_message(result)
+            return
 
         agent_framework_helper = self.app_context.get_service(AgentFrameworkHelper)
         agent_client = await agent_framework_helper.get_client_async("default")
@@ -220,3 +246,8 @@ class SummarizeExecutor(Executor):
         """
         content_process_service = self.app_context.get_service(ContentProcessService)
         return await content_process_service.get_steps(process_id)
+
+    async def fetch_processed_result(self, process_id: str) -> dict | None:
+        """Fetch a completed document result from Cosmos DB."""
+        content_process_service = self.app_context.get_service(ContentProcessService)
+        return await content_process_service.get_processed(process_id)

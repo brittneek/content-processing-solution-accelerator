@@ -1,0 +1,1364 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GeneratorSpecComplianceAnalyzer",
+  "description": "Comprehensive generator specification extraction translated from the Content Understanding analyzer definition. Extract normalized facts and preserve exact source evidence; external YAML rules determine compliance.",
+  "type": "object",
+  "properties": {
+    "document_metadata": {
+      "type": "object",
+      "description": "Identifying information for the submittal being graded.",
+      "properties": {
+        "vendor_name": {
+          "description": "Manufacturer or supplier submitting the generator set.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "generator_model": {
+          "description": "Generator set model or part number.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "engine_model": {
+          "description": "Diesel engine make and model.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rated_output": {
+          "description": "Rated electrical output including units and rating class, for example '2500 kW standby' or '2000 kVA prime'.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "document_date": {
+          "description": "Publication or revision date of the document.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "product_line": {
+          "description": "Which product line the submittal targets. Determines which fuel tank sizing rule applies: Retail requires at least 30 hours runtime at 100% load using 80% of rated tank capacity; xScale requires at least 48 hours at 100% load using 100% of rated tank capacity.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "Retail",
+            "xScale",
+            "Both",
+            "NotStated",
+            null
+          ]
+        }
+      },
+      "required": [
+        "vendor_name",
+        "generator_model",
+        "engine_model",
+        "rated_output",
+        "document_date",
+        "product_line"
+      ]
+    },
+    "diesel_engine_type": {
+      "type": "object",
+      "description": "Baseline: four-stroke, water-cooled diesel engine.",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim engine type description as stated in the document, including stroke cycle and cooling medium."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "is_four_stroke": {
+          "description": "True if the engine is explicitly described as four-stroke or four-cycle.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "is_water_cooled": {
+          "description": "True if the engine is explicitly described as water-cooled or liquid-cooled.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "is_four_stroke",
+        "is_water_cooled"
+      ]
+    },
+    "turbocharged": {
+      "type": "object",
+      "description": "Baseline: engine must be turbocharged.",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim text describing air induction or turbocharging arrangement."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "is_turbocharged": {
+          "description": "True if the engine is explicitly described as turbocharged.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "is_turbocharged"
+      ]
+    },
+    "aftercooled": {
+      "type": "object",
+      "description": "Baseline: engine must be aftercooled (charge air cooled).",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim text describing aftercooling, intercooling, or charge air cooling."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "is_aftercooled": {
+          "description": "True if the engine is explicitly described as aftercooled, intercooled, or charge-air cooled.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "is_aftercooled"
+      ]
+    },
+    "fuel_consumption": {
+      "type": "object",
+      "description": "Baseline: fuel consumption values must be provided at 50%, 75% and 100% load, with fan, in both metric and imperial units.",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim fuel consumption statement, including the load points, fan condition, and units as printed in the document."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "load_points": {
+          "description": "One entry for each published fuel consumption load point.",
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "load_percent": {
+                    "description": "Percent of rated load for this data point, for example 50, 75 or 100.",
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "with_fan": {
+                    "description": "True if the value is stated as 'with fan'. False if stated as 'without fan'.",
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "consumption_liters_per_hour": {
+                    "description": "Metric fuel consumption in litres per hour, if stated.",
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "consumption_gallons_per_hour": {
+                    "description": "Imperial fuel consumption in US gallons per hour, if stated.",
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "load_percent",
+                  "with_fan",
+                  "consumption_liters_per_hour",
+                  "consumption_gallons_per_hour"
+                ]
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "metric_units_provided": {
+          "description": "True if fuel consumption is reported in metric units anywhere in the document.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "imperial_units_provided": {
+          "description": "True if fuel consumption is reported in imperial units anywhere in the document.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "load_points",
+        "metric_units_provided",
+        "imperial_units_provided"
+      ]
+    },
+    "exhaust_emissions": {
+      "type": "object",
+      "description": "Baseline: comply with national and local requirements; EPA Tier 2 is the stated minimum; NOx+HC, CO and PM must be reported.",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim emissions certification and compliance statement."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "national_local_compliance_stated": {
+          "description": "True if the document claims compliance with the national and local emissions requirements applicable at the installation site.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "emissions_tier": {
+          "description": "Certified emissions tier or stage as stated, for example 'EPA Tier 2', 'EPA Tier 4 Final', 'EU Stage V'.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "nox_plus_hc": {
+          "description": "Reported NOx+HC value including units, typically g/kWh or g/hp-hr.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "carbon_monoxide": {
+          "description": "Reported CO value including units.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "particulate_matter": {
+          "description": "Reported PM value including units.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "national_local_compliance_stated",
+        "emissions_tier",
+        "nox_plus_hc",
+        "carbon_monoxide",
+        "particulate_matter"
+      ]
+    },
+    "cooling_requirements": {
+      "type": "object",
+      "description": "Baseline: closed-loop liquid cooling; full-load capability at site conditions; 50/50 glycol-water mixture; maximum external radiator pressure drop 0.5 inches water gauge.",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim cooling system description."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "closed_loop_liquid_cooling": {
+          "description": "True if the cooling system is explicitly described as closed-loop liquid cooling.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "coolant_mixture": {
+          "description": "Stated coolant mixture, for example '50/50 ethylene glycol and water'.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "max_external_radiator_pressure_drop_in_wg": {
+          "description": "Maximum external static pressure or restriction the radiator can tolerate, expressed in inches of water gauge. Convert to inches water gauge if stated in Pa or mm H2O.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "full_load_at_site_conditions": {
+          "description": "True if the document states the cooling system supports full rated load at the specified site ambient conditions.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "closed_loop_liquid_cooling",
+        "coolant_mixture",
+        "max_external_radiator_pressure_drop_in_wg",
+        "full_load_at_site_conditions"
+      ]
+    },
+    "starting_system": {
+      "type": "object",
+      "description": "Baseline: 24 VDC negative ground; minimum two non-redundant starting motors; three 10-second crank cycles; start and accept load within 10 seconds.",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim starting system description."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "system_voltage_vdc": {
+          "description": "Starting system nominal DC voltage, for example 24.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "negative_ground": {
+          "description": "True if the starting system is stated as negative ground.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "number_of_starting_motors": {
+          "description": "Quantity of starting motors or starter assemblies provided.",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "starting_motors_non_redundant": {
+          "description": "True if the starting motors are non-redundant, meaning all motors are required to crank the engine rather than one being a standby spare.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "crank_cycle_seconds": {
+          "description": "Duration in seconds of each crank cycle.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "number_of_crank_cycles": {
+          "description": "Number of crank attempts before lockout.",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "start_and_load_acceptance_seconds": {
+          "description": "Time in seconds from start signal to the set accepting load.",
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "system_voltage_vdc",
+        "negative_ground",
+        "number_of_starting_motors",
+        "starting_motors_non_redundant",
+        "crank_cycle_seconds",
+        "number_of_crank_cycles",
+        "start_and_load_acceptance_seconds"
+      ]
+    },
+    "lubrication_system": {
+      "type": "object",
+      "description": "Baseline: gear-type positive-displacement full-pressure oil pump; water-cooled oil cooler; greater than 90% removal of particles 5 micrometres and smaller; full-flow fail-safe filtration.",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim lubrication system description."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "oil_pump_type": {
+          "description": "Oil pump type as stated, for example 'gear-type positive displacement'.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "full_pressure_lubrication": {
+          "description": "True if the lubrication system is described as full-pressure.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "oil_cooler_type": {
+          "description": "Oil cooler type as stated, for example 'water-cooled' or 'air-cooled'.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "particle_removal_efficiency_percent": {
+          "description": "Stated filtration efficiency percentage.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "particle_size_microns": {
+          "description": "Particle size in micrometres that the stated efficiency applies to.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "full_flow_fail_safe_filtration": {
+          "description": "True if filtration is described as full-flow with a fail-safe or bypass provision.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "oil_pump_type",
+        "full_pressure_lubrication",
+        "oil_cooler_type",
+        "particle_removal_efficiency_percent",
+        "particle_size_microns",
+        "full_flow_fail_safe_filtration"
+      ]
+    },
+    "base_tank_design": {
+      "type": "object",
+      "description": "Baseline: rectangular, generator-approved construction; reinforced support rated 5,000 lb per generator mounting-hole location; comply with local requirements and applicable tank standards.",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim base fuel tank construction description."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "tank_shape": {
+          "description": "Tank geometry as stated, for example 'rectangular' or 'cylindrical'.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "generator_approved_construction": {
+          "description": "True if the tank is stated to be of construction approved by the generator set manufacturer.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "local_requirements_compliance": {
+          "description": "True if the document claims the tank complies with local code requirements at the installation site.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "support_rating_lb_per_mounting_hole": {
+          "description": "Reinforced support load rating in pounds at each generator mounting-hole location.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "tank_standards": {
+          "description": "Tank construction standards or listings cited, for example 'UL 142', 'UL 2085'.",
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "tank_shape",
+        "generator_approved_construction",
+        "local_requirements_compliance",
+        "support_rating_lb_per_mounting_hole",
+        "tank_standards"
+      ]
+    },
+    "tank_sizing": {
+      "type": "object",
+      "description": "Baseline: Retail requires at least 30 hours at 100% load using 80% of rated capacity. xScale requires at least 48 hours at 100% load using 100% of rated capacity. Normal filling is limited to 90% of tank volume in both cases.",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim tank sizing and runtime statement."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "rated_tank_capacity": {
+          "description": "Rated fuel tank capacity including units, for example '4000 gal' or '15000 L'.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "stated_runtime_hours": {
+          "description": "Stated runtime in hours at 100% load.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "usable_capacity_percent": {
+          "description": "Percent of rated capacity assumed usable in the runtime calculation.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "normal_fill_limit_percent": {
+          "description": "Percent of tank volume the normal fill is limited to.",
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "rated_tank_capacity",
+        "stated_runtime_hours",
+        "usable_capacity_percent",
+        "normal_fill_limit_percent"
+      ]
+    },
+    "fuel_monitoring": {
+      "type": "object",
+      "description": "Baseline: direct-reading gauge plus digital fuel-level and leak monitoring; Modbus or TCP/IP, converted to TCP/IP for the monitoring interface.",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim fuel monitoring description."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "communication_protocols": {
+          "description": "Monitoring communication protocols offered, for example 'Modbus RTU', 'Modbus TCP', 'TCP/IP', 'BACnet'.",
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "direct_reading_gauge_provided": {
+          "description": "True if a direct-reading mechanical gauge is included.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "digital_fuel_level_monitoring": {
+          "description": "True if digital or electronic fuel-level monitoring is provided in addition to the direct-reading gauge.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "digital_leak_monitoring": {
+          "description": "True if digital or electronic leak monitoring is provided.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "converted_to_tcp_ip": {
+          "description": "True if the monitoring output is delivered as TCP/IP to the monitoring interface, either natively or through a Modbus-to-TCP/IP converter or gateway.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "communication_protocols",
+        "direct_reading_gauge_provided",
+        "digital_fuel_level_monitoring",
+        "digital_leak_monitoring",
+        "converted_to_tcp_ip"
+      ]
+    },
+    "leak_detection": {
+      "type": "object",
+      "description": "Baseline: containment-basin leak detector and water-detection probe, both monitored at the engine controller.",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim leak and water detection description."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "containment_basin_leak_detector_provided": {
+          "description": "True if a leak detector is provided in the containment basin, rupture basin, or secondary containment.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "water_detection_probe_provided": {
+          "description": "True if a water-detection probe is provided to sense water intrusion in the fuel tank or basin.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "monitored_at_engine_controller": {
+          "description": "True if the leak and water detection alarms are annunciated at the engine controller.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "containment_basin_leak_detector_provided",
+        "water_detection_probe_provided",
+        "monitored_at_engine_controller"
+      ]
+    },
+    "fuel_level_monitoring": {
+      "type": "object",
+      "description": "Baseline: direct gauge; low alarm at 50%; high alarm at 90%; high-high alarm at 95%; level transmitter; spare fitting.",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim fuel level monitoring and alarm setpoint description."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "low_alarm_percent": {
+          "description": "Low fuel level alarm setpoint as a percent of tank volume.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "high_alarm_percent": {
+          "description": "High fuel level alarm setpoint as a percent of tank volume.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "high_high_alarm_percent": {
+          "description": "High-high fuel level alarm setpoint as a percent of tank volume.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "level_transmitter_provided": {
+          "description": "True if a continuous level transmitter is included.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "spare_fitting_provided": {
+          "description": "True if a spare or future-use tank fitting is included.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "low_alarm_percent",
+        "high_alarm_percent",
+        "high_high_alarm_percent",
+        "level_transmitter_provided",
+        "spare_fitting_provided"
+      ]
+    },
+    "filtration": {
+      "type": "object",
+      "description": "Baseline: on-board secondary filter at 2 micrometres; two parallel primary filtration systems at 20 micrometres each; maximum pressure drop 2.5 psi; water separation; isolation valves permitting online servicing.",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim fuel filtration description."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "secondary_filter_microns": {
+          "description": "On-board secondary fuel filter rating in micrometres.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "primary_filter_microns": {
+          "description": "Primary fuel filter rating in micrometres.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "number_of_parallel_primary_filters": {
+          "description": "Quantity of parallel primary filtration systems.",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "max_pressure_drop_psi": {
+          "description": "Maximum allowable pressure drop across the primary filtration system in psi.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "water_separation_provided": {
+          "description": "True if water separation is included in the fuel filtration system.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "online_serviceable_isolation": {
+          "description": "True if isolation valves allow one filter train to be serviced while the engine runs.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "secondary_filter_microns",
+        "primary_filter_microns",
+        "number_of_parallel_primary_filters",
+        "max_pressure_drop_psi",
+        "water_separation_provided",
+        "online_serviceable_isolation"
+      ]
+    },
+    "fuel_return_cooling": {
+      "type": "object",
+      "description": "Baseline: a fuel return cooler must be evaluated and installed when needed so that returning fuel does not affect engine operation or the generator rating.",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim fuel return cooling description."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "return_cooler_provided": {
+          "description": "True if a fuel return cooler is supplied or explicitly evaluated as unnecessary.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "return_cooler_provided"
+      ]
+    },
+    "overfill_protection": {
+      "type": "object",
+      "description": "Baseline: remote fill connections with automatic overfill protection; overfill-prevention valve set at 95%.",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim overfill protection description."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "remote_fill_connections_provided": {
+          "description": "True if remote fill connections are provided.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "automatic_overfill_protection": {
+          "description": "True if the overfill protection operates automatically without operator intervention.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "overfill_valve_setpoint_percent": {
+          "description": "Overfill-prevention valve setpoint as a percent of tank volume.",
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "remote_fill_connections_provided",
+        "automatic_overfill_protection",
+        "overfill_valve_setpoint_percent"
+      ]
+    },
+    "maximum_ambient_temperature": {
+      "type": "object",
+      "description": "Baseline: generator system rated to at least +40 degrees Celsius.",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim maximum ambient temperature rating for the generator system."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "stated_max_c": {
+          "description": "Maximum ambient temperature in degrees Celsius. Convert from Fahrenheit if needed.",
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "stated_max_c"
+      ]
+    },
+    "minimum_ambient_temperature": {
+      "type": "object",
+      "description": "Baseline: generator system rated to at least -35 degrees Celsius.",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim minimum ambient temperature rating for the generator system. If no explicit system-level minimum ambient rating is given, fall back to the coldest cold-weather capability the document commits to anywhere, such as a coolant or antifreeze protection temperature, a cold-start rating, or a jacket water heater rating, and quote that sentence instead. Prefix such a fallback with 'Proxy: '."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "stated_min_c": {
+          "description": "Minimum ambient temperature in degrees CELSIUS, negative for sub-zero. CRITICAL: if the document states the temperature in Fahrenheit, you MUST convert before emitting this number. celsius = (fahrenheit - 32) * 5 / 9. For example 'minus 10 degrees F' MUST be emitted as -23.3, never as -10. Never copy a Fahrenheit value into this field unchanged.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "is_proxy_value": {
+          "description": "True when StatedValue came from a coolant protection, cold-start, or heater rating rather than an explicit generator system minimum ambient temperature rating.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "stated_min_c",
+        "is_proxy_value"
+      ]
+    },
+    "relative_humidity": {
+      "type": "object",
+      "description": "Baseline: generator system rated for 0% to 95% relative humidity.",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim relative humidity rating for the generator system."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "stated_min_rh_percent": {
+          "description": "Lower bound of the rated relative humidity range, as a percent.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "stated_max_rh_percent": {
+          "description": "Upper bound of the rated relative humidity range, as a percent.",
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "stated_min_rh_percent",
+        "stated_max_rh_percent"
+      ]
+    },
+    "altitude": {
+      "type": "object",
+      "description": "Baseline: minimum standard capability of 1,000 metres above sea level without derate. A project RFQ may specify a higher altitude.",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim altitude capability or derate statement."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "stated_altitude_meters": {
+          "description": "Altitude in METRES above sea level at which full rating is maintained. CRITICAL: if the document states the altitude in feet, you MUST convert to metres before emitting this number. metres = feet * 0.3048. For example '1000 feet' MUST be emitted as 305, never as 1000. Never copy a value expressed in feet into this field unchanged.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "derate_above_stated_altitude": {
+          "description": "Stated derate rate above the full-rating altitude, if given.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "stated_altitude_meters",
+        "derate_above_stated_altitude"
+      ]
+    },
+    "generator_control_ambient_rating": {
+      "type": "object",
+      "description": "Baseline: -40 C to +70 C; 95% RH non-condensing from 30 C to 60 C.",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim generator control ambient temperature and humidity rating."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "stated_min_c": {
+          "description": "Lower bound of the generator control operating temperature range in degrees Celsius.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "stated_max_c": {
+          "description": "Upper bound of the generator control operating temperature range in degrees Celsius.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "stated_humidity_rating": {
+          "description": "Humidity rating for the generator control, including condensing qualifier and applicable temperature band.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "stated_min_c",
+        "stated_max_c",
+        "stated_humidity_rating"
+      ]
+    },
+    "battery_charger_ambient_rating": {
+      "type": "object",
+      "description": "Baseline: -20 C to +60 C; 5% to 95% RH non-condensing.",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim battery charger ambient temperature and humidity rating."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "stated_min_c": {
+          "description": "Lower bound of the battery charger operating temperature range in degrees Celsius.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "stated_max_c": {
+          "description": "Upper bound of the battery charger operating temperature range in degrees Celsius.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "stated_humidity_rating": {
+          "description": "Humidity rating for the battery charger, including condensing qualifier.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "stated_min_c",
+        "stated_max_c",
+        "stated_humidity_rating"
+      ]
+    },
+    "voltage_regulator_ambient_rating": {
+      "type": "object",
+      "description": "Baseline: -40 C to +70 C.",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim voltage regulator ambient temperature rating."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "stated_min_c": {
+          "description": "Lower bound of the voltage regulator operating temperature range in degrees Celsius.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "stated_max_c": {
+          "description": "Upper bound of the voltage regulator operating temperature range in degrees Celsius.",
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "stated_min_c",
+        "stated_max_c"
+      ]
+    },
+    "engine_governing_control_ambient_rating": {
+      "type": "object",
+      "description": "Baseline: -40 C to +85 C; 0% to 90% RH.",
+      "properties": {
+        "source_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Verbatim engine governing control ambient temperature and humidity rating."
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "One-based PDF page containing source_text."
+        },
+        "stated_min_c": {
+          "description": "Lower bound of the engine governing control operating temperature range in degrees Celsius.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "stated_max_c": {
+          "description": "Upper bound of the engine governing control operating temperature range in degrees Celsius.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "stated_humidity_rating": {
+          "description": "Humidity rating for the engine governing control.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_text",
+        "source_page",
+        "stated_min_c",
+        "stated_max_c",
+        "stated_humidity_rating"
+      ]
+    }
+  },
+  "required": [
+    "document_metadata",
+    "diesel_engine_type",
+    "turbocharged",
+    "aftercooled",
+    "fuel_consumption",
+    "exhaust_emissions",
+    "cooling_requirements",
+    "starting_system",
+    "lubrication_system",
+    "base_tank_design",
+    "tank_sizing",
+    "fuel_monitoring",
+    "leak_detection",
+    "fuel_level_monitoring",
+    "filtration",
+    "fuel_return_cooling",
+    "overfill_protection",
+    "maximum_ambient_temperature",
+    "minimum_ambient_temperature",
+    "relative_humidity",
+    "altitude",
+    "generator_control_ambient_rating",
+    "battery_charger_ambient_rating",
+    "voltage_regulator_ambient_rating",
+    "engine_governing_control_ambient_rating"
+  ]
+}

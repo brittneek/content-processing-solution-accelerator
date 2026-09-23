@@ -94,6 +94,22 @@ class EntityValidationResult(BaseModel):
     name: str
     section: str
     status: Literal["pass", "fail", "missing", "not_applicable", "error"]
+    compliance_status: (
+        Literal[
+            "compliant",
+            "partially_compliant",
+            "noncompliant",
+            "undetermined",
+            "not_applicable",
+            "review_required",
+        ]
+        | None
+    ) = None
+    baseline: str | None = None
+    extracted_value: Any = None
+    confidence: float | None = None
+    minimum_confidence: float | None = None
+    justification: str | None = None
     source_text: str | None = None
     source_page: int | None = None
     evidence_match_type: Literal["exact", "contains", "fuzzy", "not_found"] = (
@@ -112,6 +128,12 @@ class ValidationSummary(BaseModel):
     missing: int = 0
     not_applicable: int = 0
     errors: int = 0
+    compliant: int = 0
+    partially_compliant: int = 0
+    noncompliant: int = 0
+    undetermined: int = 0
+    compliance_not_applicable: int = 0
+    review_required: int = 0
 
 
 class ValidationResult(BaseModel):
@@ -119,6 +141,17 @@ class ValidationResult(BaseModel):
 
     rule_set_id: str
     rule_set_version: str
+    overall_status: (
+        Literal[
+            "compliant",
+            "partially_compliant",
+            "noncompliant",
+            "undetermined",
+            "not_applicable",
+            "review_required",
+        ]
+        | None
+    ) = None
     summary: ValidationSummary
     entities: list[EntityValidationResult]
 

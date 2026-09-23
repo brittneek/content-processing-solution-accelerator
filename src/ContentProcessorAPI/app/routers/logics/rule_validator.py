@@ -46,6 +46,11 @@ def validate_rules_yaml(raw: bytes) -> dict[str, Any]:
     for field in ("dsl_version", "rule_set_id", "name", "version", "entities"):
         if field not in document:
             errors.append(f"Missing required top-level field '{field}'.")
+    _validate_confidence(
+        document.get("minimum_confidence"),
+        "minimum_confidence",
+        errors,
+    )
 
     entities = document.get("entities")
     if not isinstance(entities, list) or not entities:
@@ -70,6 +75,16 @@ def _validate_entity(
     for field in ("id", "name", "section", "rules"):
         if field not in entity:
             errors.append(f"{prefix} is missing '{field}'.")
+    baseline = entity.get("baseline")
+    if baseline is not None and (
+        not isinstance(baseline, str) or not baseline.strip()
+    ):
+        errors.append(f"{prefix}.baseline must be a non-empty string.")
+    _validate_confidence(
+        entity.get("minimum_confidence"),
+        f"{prefix}.minimum_confidence",
+        errors,
+    )
 
     rules = entity.get("rules")
     if not isinstance(rules, list) or not rules:
@@ -89,3 +104,39 @@ def _validate_entity(
             errors.append(
                 f"{rule_prefix}.operator '{operator}' is not supported."
             )
+        conditions = rule.get("when", [])
+        if not isinstance(conditions, list):
+            errors.append(f"{rule_prefix}.when must be a list.")
+            continue
+        for condition_index, condition in enumerate(conditions):
+            condition_prefix = f"{rule_prefix}.when[{condition_index}]"
+            if not isinstance(condition, dict):
+                errors.append(f"{condition_prefix} must be an object.")
+                continue
+            for field in ("path", "operator"):
+                if field not in condition:
+                    errors.append(f"{condition_prefix} is missing '{field}'.")
+            condition_operator = condition.get("operator")
+            if (
+                condition_operator is not None
+                and condition_operator not in _SUPPORTED_OPERATORS
+            ):
+                errors.append(
+                    f"{condition_prefix}.operator "
+                    f"'{condition_operator}' is not supported."
+                )
+
+
+def _validate_confidence(
+    value: Any,
+    field: str,
+    errors: list[str],
+) -> None:
+    if value is None:
+        return
+    if (
+        isinstance(value, bool)
+        or not isinstance(value, (int, float))
+        or not 0 <= value <= 1
+    ):
+        errors.append(f"{field} must be a number between 0 and 1.")

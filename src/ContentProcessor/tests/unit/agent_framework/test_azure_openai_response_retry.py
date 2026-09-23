@@ -15,18 +15,20 @@ import pytest
 # be imported in environments where the package is not installed.
 # ---------------------------------------------------------------------------
 _af = ModuleType("agent_framework")
-_af_azure = ModuleType("agent_framework.azure")
+_af.__path__ = []  # type: ignore[attr-defined]
+_af_openai = ModuleType("agent_framework.openai")
 
-_af_azure.AzureOpenAIChatClient = type("AzureOpenAIChatClient", (), {})  # type: ignore[attr-defined]
-_af_azure.AzureOpenAIResponsesClient = type("AzureOpenAIResponsesClient", (), {})  # type: ignore[attr-defined]
+_af_openai.OpenAIChatCompletionClient = type("OpenAIChatCompletionClient", (), {})
+_af_openai.OpenAIChatClient = type("OpenAIChatClient", (), {})
 
 sys.modules.setdefault("agent_framework", _af)
-sys.modules.setdefault("agent_framework.azure", _af_azure)
+sys.modules.setdefault("agent_framework.openai", _af_openai)
 
-from libs.agent_framework.azure_openai_response_retry import (  # noqa: E402
+from libs.agent_framework.azure_openai_response_retry import (
     RateLimitRetryConfig,
     _is_transient_error,
     _looks_like_access_check_challenge,
+    _looks_like_connection_error,
     _looks_like_rate_limit,
 )
 
@@ -139,6 +141,38 @@ class TestIsTransientError:
             _is_transient_error(RuntimeError("maximum context length exceeded"))
             is False
         )
+
+    @pytest.mark.parametrize(
+        "message",
+        [
+            "Connection error.",
+            "Connection aborted by remote host",
+            "Remote end closed connection without response",
+            "Server disconnected",
+        ],
+    )
+    def test_connection_failure_is_transient(self, message: str):
+        assert _is_transient_error(RuntimeError(message)) is True
+
+
+class TestLooksLikeConnectionError:
+    def test_matches_exception_type(self):
+        ApiConnectionError = type("APIConnectionError", (RuntimeError,), {})
+        assert _looks_like_connection_error(ApiConnectionError("failed")) is True
+
+    def test_matches_gateway_status(self):
+        exc = RuntimeError("gateway")
+        exc.status_code = 503  # type: ignore[attr-defined]
+        assert _looks_like_connection_error(exc) is True
+
+    def test_follows_inner_exception(self):
+        inner = RuntimeError("connection reset")
+        outer = RuntimeError("wrapper")
+        outer.inner_exception = inner  # type: ignore[attr-defined]
+        assert _looks_like_connection_error(outer) is True
+
+    def test_non_connection_error_returns_false(self):
+        assert _looks_like_connection_error(ValueError("invalid input")) is False
 
 
 # ── RateLimitRetryConfig ────────────────────────────────────────────────────

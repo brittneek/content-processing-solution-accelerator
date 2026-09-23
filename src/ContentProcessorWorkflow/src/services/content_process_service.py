@@ -176,12 +176,14 @@ class ContentProcessService:
                     PipelineStep.Extract.value,
                     PipelineStep.Mapping.value,
                     PipelineStep.Evaluating.value,
+                    PipelineStep.Validating.value,
                     PipelineStep.Save.value,
                 ],
                 remaining_steps=[
                     PipelineStep.Extract.value,
                     PipelineStep.Mapping.value,
                     PipelineStep.Evaluating.value,
+                    PipelineStep.Validating.value,
                     PipelineStep.Save.value,
                 ],
                 completed_steps=[],
@@ -307,12 +309,15 @@ class ContentProcessService:
             await asyncio.sleep(poll_interval_seconds)
             elapsed += poll_interval_seconds
 
-        # Timeout
+        # Timeout is terminal for the caller, but it is not a successful
+        # document state. Returning the last pipeline step here previously
+        # caused claim workflows to continue and mark the parent Completed.
         return {
-            "status": result.get("status", "processing") if result else "Timeout",
+            "status": "Timeout",
             "process_id": process_id,
             "file_name": result.get("file_name", "") if result else "",
             "terminal": True,
+            "last_status": result.get("status", "processing") if result else None,
         }
 
     def close(self):

@@ -1,0 +1,339 @@
+dsl_version: 1
+rule_set_id: generator-spec-compliance-analyzer
+name: Generator Specification Compliance Analyzer
+version: 0.2.0
+status: active
+minimum_confidence: 0.6
+description: >
+  Comprehensive generator specification baseline translated from the Content
+  Understanding analyzer. Extraction remains in JSON Schema; these atomic,
+  versioned rules determine compliance without product-specific evaluator code.
+
+entities:
+  - id: document_metadata
+    name: Document metadata
+    section: Document Metadata
+    baseline: The submittal must identify the vendor, generator and engine models, rated output, document date, and applicable product line.
+    rules:
+      - {id: metadata-vendor, path: document_metadata.vendor_name, operator: exists, required: true, severity: medium}
+      - {id: metadata-generator-model, path: document_metadata.generator_model, operator: exists, required: true, severity: medium}
+      - {id: metadata-engine-model, path: document_metadata.engine_model, operator: exists, required: true, severity: medium}
+      - {id: metadata-rated-output, path: document_metadata.rated_output, operator: exists, required: true, severity: medium}
+      - {id: metadata-document-date, path: document_metadata.document_date, operator: exists, required: true, severity: low}
+      - {id: metadata-product-line, path: document_metadata.product_line, operator: one_of, expected: [Retail, xScale, Both], required: true, severity: high}
+
+  - id: diesel_engine_type
+    name: Diesel engine type
+    section: Engine Requirements
+    baseline: The generator must use a four-stroke, water-cooled diesel engine.
+    source_text_path: diesel_engine_type.source_text
+    source_page_path: diesel_engine_type.source_page
+    rules:
+      - {id: engine-four-stroke, path: diesel_engine_type.is_four_stroke, operator: equals, expected: true, required: true, severity: high}
+      - {id: engine-water-cooled, path: diesel_engine_type.is_water_cooled, operator: equals, expected: true, required: true, severity: high}
+
+  - id: turbocharged
+    name: Turbocharged
+    section: Engine Requirements
+    baseline: The engine must be turbocharged.
+    source_text_path: turbocharged.source_text
+    source_page_path: turbocharged.source_page
+    rules:
+      - {id: engine-turbocharged, path: turbocharged.is_turbocharged, operator: equals, expected: true, required: true, severity: high}
+
+  - id: aftercooled
+    name: Aftercooled
+    section: Engine Requirements
+    baseline: The engine must be aftercooled or charge-air cooled.
+    source_text_path: aftercooled.source_text
+    source_page_path: aftercooled.source_page
+    rules:
+      - {id: engine-aftercooled, path: aftercooled.is_aftercooled, operator: equals, expected: true, required: true, severity: high}
+
+  - id: fuel_consumption
+    name: Fuel consumption
+    section: Engine Requirements
+    baseline: Fuel consumption must be provided at 50%, 75%, and 100% load with the fan in metric and imperial units.
+    source_text_path: fuel_consumption.source_text
+    source_page_path: fuel_consumption.source_page
+    rules:
+      - id: consumption-load-points-with-fan
+        path: fuel_consumption.load_points
+        operator: contains_all
+        expected:
+          - {load_percent: 50, with_fan: true}
+          - {load_percent: 75, with_fan: true}
+          - {load_percent: 100, with_fan: true}
+        required: true
+        severity: high
+      - {id: consumption-metric-units, path: fuel_consumption.metric_units_provided, operator: equals, expected: true, required: true, severity: medium}
+      - {id: consumption-imperial-units, path: fuel_consumption.imperial_units_provided, operator: equals, expected: true, required: true, severity: medium}
+
+  - id: exhaust_emissions
+    name: Exhaust emissions
+    section: Engine Requirements
+    baseline: The engine must meet national and local emissions requirements, meet at least EPA Tier 2 or an accepted equivalent, and report NOx+HC, CO, and PM.
+    source_text_path: exhaust_emissions.source_text
+    source_page_path: exhaust_emissions.source_page
+    rules:
+      - {id: emissions-national-local-compliance, path: exhaust_emissions.national_local_compliance_stated, operator: equals, expected: true, required: true, severity: high}
+      - {id: emissions-tier, path: exhaust_emissions.emissions_tier, operator: regex, expected: '(?i)(EPA\s*Tier\s*[2-9]|EU\s*Stage\s*(V|VI|[5-9]))', required: true, severity: high}
+      - {id: emissions-nox-hc, path: exhaust_emissions.nox_plus_hc, operator: exists, required: true, severity: high}
+      - {id: emissions-carbon-monoxide, path: exhaust_emissions.carbon_monoxide, operator: exists, required: true, severity: high}
+      - {id: emissions-particulate-matter, path: exhaust_emissions.particulate_matter, operator: exists, required: true, severity: high}
+
+  - id: cooling_requirements
+    name: Cooling requirements
+    section: Engine Requirements
+    baseline: Cooling must be closed-loop liquid cooling, support full load at site conditions, use a 50/50 glycol-water mixture, and limit radiator pressure drop to 0.5 inches water gauge.
+    source_text_path: cooling_requirements.source_text
+    source_page_path: cooling_requirements.source_page
+    rules:
+      - {id: cooling-closed-loop-liquid, path: cooling_requirements.closed_loop_liquid_cooling, operator: equals, expected: true, required: true, severity: high}
+      - {id: cooling-full-load-site-conditions, path: cooling_requirements.full_load_at_site_conditions, operator: equals, expected: true, required: true, severity: high}
+      - {id: cooling-50-50-mixture, path: cooling_requirements.coolant_mixture, operator: regex, expected: '(?i)(50\s*[/:-]\s*50|50\s*%.*50\s*%)', required: true, severity: high}
+      - {id: cooling-pressure-drop, path: cooling_requirements.max_external_radiator_pressure_drop_in_wg, operator: maximum, expected: 0.5, unit: in_wg, required: true, severity: high}
+
+  - id: starting_system
+    name: Starting system
+    section: Engine Requirements
+    baseline: Starting must use 24 VDC negative ground, at least two non-redundant motors, three 10-second crank cycles, and accept load within 10 seconds.
+    source_text_path: starting_system.source_text
+    source_page_path: starting_system.source_page
+    rules:
+      - {id: starting-voltage, path: starting_system.system_voltage_vdc, operator: equals, expected: 24, unit: VDC, required: true, severity: high}
+      - {id: starting-negative-ground, path: starting_system.negative_ground, operator: equals, expected: true, required: true, severity: high}
+      - {id: starting-motor-count, path: starting_system.number_of_starting_motors, operator: minimum, expected: 2, required: true, severity: high}
+      - {id: starting-motors-non-redundant, path: starting_system.starting_motors_non_redundant, operator: equals, expected: true, required: true, severity: high}
+      - {id: starting-crank-cycle-duration, path: starting_system.crank_cycle_seconds, operator: equals, expected: 10, unit: seconds, required: true, severity: high}
+      - {id: starting-crank-cycle-count, path: starting_system.number_of_crank_cycles, operator: minimum, expected: 3, required: true, severity: high}
+      - {id: starting-load-acceptance, path: starting_system.start_and_load_acceptance_seconds, operator: maximum, expected: 10, unit: seconds, required: true, severity: high}
+
+  - id: lubrication_system
+    name: Lubrication system
+    section: Engine Requirements
+    baseline: Lubrication must use a gear-type positive-displacement full-pressure pump, water-cooled oil cooler, greater than 90% removal at 5 micrometres, and full-flow fail-safe filtration.
+    source_text_path: lubrication_system.source_text
+    source_page_path: lubrication_system.source_page
+    rules:
+      - {id: lubrication-gear-positive-displacement, path: lubrication_system.oil_pump_type, operator: regex, expected: '(?i)(gear.*positive.?displacement|positive.?displacement.*gear)', required: true, severity: high}
+      - {id: lubrication-full-pressure, path: lubrication_system.full_pressure_lubrication, operator: equals, expected: true, required: true, severity: high}
+      - {id: lubrication-water-cooled, path: lubrication_system.oil_cooler_type, operator: regex, expected: '(?i)water.?cooled', required: true, severity: high}
+      - {id: lubrication-removal-efficiency, path: lubrication_system.particle_removal_efficiency_percent, operator: minimum, expected: 90, exclusive: true, unit: percent, required: true, severity: high}
+      - {id: lubrication-particle-size, path: lubrication_system.particle_size_microns, operator: maximum, expected: 5, unit: micrometres, required: true, severity: high}
+      - {id: lubrication-full-flow-fail-safe, path: lubrication_system.full_flow_fail_safe_filtration, operator: equals, expected: true, required: true, severity: high}
+
+  - id: base_tank_design
+    name: Base tank design
+    section: Fuel System Requirements
+    baseline: The base tank must be rectangular, generator-approved, locally compliant, rated for 5,000 lb per mounting-hole location, and constructed to an applicable tank standard.
+    source_text_path: base_tank_design.source_text
+    source_page_path: base_tank_design.source_page
+    rules:
+      - {id: tank-rectangular, path: base_tank_design.tank_shape, operator: regex, expected: '(?i)rectangular', required: true, severity: high}
+      - {id: tank-approved-construction, path: base_tank_design.generator_approved_construction, operator: equals, expected: true, required: true, severity: high}
+      - {id: tank-local-compliance, path: base_tank_design.local_requirements_compliance, operator: equals, expected: true, required: true, severity: high}
+      - {id: tank-support-rating, path: base_tank_design.support_rating_lb_per_mounting_hole, operator: minimum, expected: 5000, unit: lb_per_mounting_hole, required: true, severity: high}
+      - {id: tank-standard, path: base_tank_design.tank_standards, operator: exists, required: true, severity: medium}
+
+  - id: tank_sizing
+    name: Tank sizing
+    section: Fuel System Requirements
+    baseline: Retail requires at least 30 hours at full load using 80% capacity; xScale requires at least 48 hours using 100% capacity; normal filling is limited to 90%.
+    source_text_path: tank_sizing.source_text
+    source_page_path: tank_sizing.source_page
+    rules:
+      - id: tank-retail-runtime
+        path: tank_sizing.stated_runtime_hours
+        operator: minimum
+        expected: 30
+        unit: hours
+        required: true
+        severity: high
+        when: [{path: document_metadata.product_line, operator: equals, expected: Retail}]
+      - id: tank-retail-usable-capacity
+        path: tank_sizing.usable_capacity_percent
+        operator: equals
+        expected: 80
+        unit: percent
+        required: true
+        severity: high
+        when: [{path: document_metadata.product_line, operator: equals, expected: Retail}]
+      - id: tank-xscale-runtime
+        path: tank_sizing.stated_runtime_hours
+        operator: minimum
+        expected: 48
+        unit: hours
+        required: true
+        severity: high
+        when: [{path: document_metadata.product_line, operator: equals, expected: xScale}]
+      - id: tank-xscale-usable-capacity
+        path: tank_sizing.usable_capacity_percent
+        operator: equals
+        expected: 100
+        unit: percent
+        required: true
+        severity: high
+        when: [{path: document_metadata.product_line, operator: equals, expected: xScale}]
+      - id: tank-both-runtime
+        path: tank_sizing.stated_runtime_hours
+        operator: minimum
+        expected: 48
+        unit: hours
+        required: true
+        severity: high
+        when: [{path: document_metadata.product_line, operator: equals, expected: Both}]
+      - {id: tank-normal-fill-limit, path: tank_sizing.normal_fill_limit_percent, operator: maximum, expected: 90, unit: percent, required: true, severity: high}
+      - {id: tank-rated-capacity, path: tank_sizing.rated_tank_capacity, operator: exists, required: true, severity: medium}
+
+  - id: fuel_monitoring
+    name: Fuel monitoring
+    section: Fuel System Requirements
+    baseline: Provide a direct-reading gauge, digital fuel-level and leak monitoring, Modbus or TCP/IP communications, and a TCP/IP monitoring interface.
+    source_text_path: fuel_monitoring.source_text
+    source_page_path: fuel_monitoring.source_page
+    rules:
+      - {id: monitoring-direct-gauge, path: fuel_monitoring.direct_reading_gauge_provided, operator: equals, expected: true, required: true, severity: high}
+      - {id: monitoring-digital-level, path: fuel_monitoring.digital_fuel_level_monitoring, operator: equals, expected: true, required: true, severity: high}
+      - {id: monitoring-digital-leak, path: fuel_monitoring.digital_leak_monitoring, operator: equals, expected: true, required: true, severity: high}
+      - {id: monitoring-protocol, path: fuel_monitoring.communication_protocols, operator: contains_any, expected: [Modbus, Modbus RTU, Modbus TCP, TCP/IP], required: true, severity: high}
+      - {id: monitoring-tcp-ip-interface, path: fuel_monitoring.converted_to_tcp_ip, operator: equals, expected: true, required: true, severity: high}
+
+  - id: leak_detection
+    name: Leak detection
+    section: Fuel System Requirements
+    baseline: Provide containment-basin leak detection and water detection monitored at the engine controller.
+    source_text_path: leak_detection.source_text
+    source_page_path: leak_detection.source_page
+    rules:
+      - {id: leak-containment-detector, path: leak_detection.containment_basin_leak_detector_provided, operator: equals, expected: true, required: true, severity: high}
+      - {id: leak-water-probe, path: leak_detection.water_detection_probe_provided, operator: equals, expected: true, required: true, severity: high}
+      - {id: leak-engine-controller-monitoring, path: leak_detection.monitored_at_engine_controller, operator: equals, expected: true, required: true, severity: high}
+
+  - id: fuel_level_monitoring
+    name: Fuel-level monitoring
+    section: Fuel System Requirements
+    baseline: Provide low, high, and high-high alarms at 50%, 90%, and 95%, plus a level transmitter and spare fitting.
+    source_text_path: fuel_level_monitoring.source_text
+    source_page_path: fuel_level_monitoring.source_page
+    rules:
+      - {id: fuel-level-low-alarm, path: fuel_level_monitoring.low_alarm_percent, operator: equals, expected: 50, unit: percent, required: true, severity: high}
+      - {id: fuel-level-high-alarm, path: fuel_level_monitoring.high_alarm_percent, operator: equals, expected: 90, unit: percent, required: true, severity: high}
+      - {id: fuel-level-high-high-alarm, path: fuel_level_monitoring.high_high_alarm_percent, operator: equals, expected: 95, unit: percent, required: true, severity: high}
+      - {id: fuel-level-transmitter, path: fuel_level_monitoring.level_transmitter_provided, operator: equals, expected: true, required: true, severity: high}
+      - {id: fuel-level-spare-fitting, path: fuel_level_monitoring.spare_fitting_provided, operator: equals, expected: true, required: true, severity: medium}
+
+  - id: filtration
+    name: Fuel filtration
+    section: Fuel System Requirements
+    baseline: Provide a 2-micrometre secondary filter, two parallel 20-micrometre primary filters, no more than 2.5 psi pressure drop, water separation, and online service isolation.
+    source_text_path: filtration.source_text
+    source_page_path: filtration.source_page
+    rules:
+      - {id: filtration-secondary-rating, path: filtration.secondary_filter_microns, operator: maximum, expected: 2, unit: micrometres, required: true, severity: high}
+      - {id: filtration-primary-rating, path: filtration.primary_filter_microns, operator: maximum, expected: 20, unit: micrometres, required: true, severity: high}
+      - {id: filtration-primary-count, path: filtration.number_of_parallel_primary_filters, operator: minimum, expected: 2, required: true, severity: high}
+      - {id: filtration-pressure-drop, path: filtration.max_pressure_drop_psi, operator: maximum, expected: 2.5, unit: psi, required: true, severity: high}
+      - {id: filtration-water-separation, path: filtration.water_separation_provided, operator: equals, expected: true, required: true, severity: high}
+      - {id: filtration-online-service, path: filtration.online_serviceable_isolation, operator: equals, expected: true, required: true, severity: high}
+
+  - id: fuel_return_cooling
+    name: Fuel return cooling
+    section: Fuel System Requirements
+    baseline: Evaluate fuel return temperature and provide a return cooler when needed to protect operation and rating.
+    source_text_path: fuel_return_cooling.source_text
+    source_page_path: fuel_return_cooling.source_page
+    rules:
+      - {id: fuel-return-cooler, path: fuel_return_cooling.return_cooler_provided, operator: equals, expected: true, required: true, severity: high}
+
+  - id: overfill_protection
+    name: Overfill protection
+    section: Fuel System Requirements
+    baseline: Provide remote fill connections with automatic overfill protection and a 95% overfill-valve setpoint.
+    source_text_path: overfill_protection.source_text
+    source_page_path: overfill_protection.source_page
+    rules:
+      - {id: overfill-remote-connections, path: overfill_protection.remote_fill_connections_provided, operator: equals, expected: true, required: true, severity: high}
+      - {id: overfill-automatic-protection, path: overfill_protection.automatic_overfill_protection, operator: equals, expected: true, required: true, severity: high}
+      - {id: overfill-valve-setpoint, path: overfill_protection.overfill_valve_setpoint_percent, operator: equals, expected: 95, unit: percent, required: true, severity: high}
+
+  - id: maximum_ambient_temperature
+    name: Maximum ambient temperature
+    section: Environmental Requirements
+    baseline: The generator system must be rated for at least +40 degrees Celsius.
+    source_text_path: maximum_ambient_temperature.source_text
+    source_page_path: maximum_ambient_temperature.source_page
+    rules:
+      - {id: environment-maximum-ambient, path: maximum_ambient_temperature.stated_max_c, operator: minimum, expected: 40, unit: degC, required: true, severity: high}
+
+  - id: minimum_ambient_temperature
+    name: Minimum ambient temperature
+    section: Environmental Requirements
+    baseline: The generator system must be explicitly rated for at least -35 degrees Celsius without relying on a proxy coolant or heater value.
+    source_text_path: minimum_ambient_temperature.source_text
+    source_page_path: minimum_ambient_temperature.source_page
+    rules:
+      - {id: environment-minimum-ambient, path: minimum_ambient_temperature.stated_min_c, operator: maximum, expected: -35, unit: degC, required: true, severity: high}
+      - {id: environment-minimum-not-proxy, path: minimum_ambient_temperature.is_proxy_value, operator: equals, expected: false, required: true, severity: medium}
+
+  - id: relative_humidity
+    name: Relative humidity
+    section: Environmental Requirements
+    baseline: The generator system must be rated from 0% through at least 95% relative humidity.
+    source_text_path: relative_humidity.source_text
+    source_page_path: relative_humidity.source_page
+    rules:
+      - {id: environment-humidity-minimum, path: relative_humidity.stated_min_rh_percent, operator: maximum, expected: 0, unit: percent, required: true, severity: high}
+      - {id: environment-humidity-maximum, path: relative_humidity.stated_max_rh_percent, operator: minimum, expected: 95, unit: percent, required: true, severity: high}
+
+  - id: altitude
+    name: Altitude
+    section: Environmental Requirements
+    baseline: The generator must maintain full rating to at least 1,000 metres above sea level without derating.
+    source_text_path: altitude.source_text
+    source_page_path: altitude.source_page
+    rules:
+      - {id: environment-altitude, path: altitude.stated_altitude_meters, operator: minimum, expected: 1000, unit: metres, required: true, severity: high}
+
+  - id: generator_control_ambient_rating
+    name: Generator control ambient rating
+    section: Environmental Requirements
+    baseline: The generator control must operate from -40 C to +70 C and at 95% RH non-condensing from 30 C to 60 C.
+    source_text_path: generator_control_ambient_rating.source_text
+    source_page_path: generator_control_ambient_rating.source_page
+    rules:
+      - {id: generator-control-minimum, path: generator_control_ambient_rating.stated_min_c, operator: maximum, expected: -40, unit: degC, required: true, severity: high}
+      - {id: generator-control-maximum, path: generator_control_ambient_rating.stated_max_c, operator: minimum, expected: 70, unit: degC, required: true, severity: high}
+      - {id: generator-control-humidity, path: generator_control_ambient_rating.stated_humidity_rating, operator: regex, expected: '(?is)(95.*non.?condens.*30.*60|30.*60.*95.*non.?condens)', required: true, severity: high}
+
+  - id: battery_charger_ambient_rating
+    name: Battery charger ambient rating
+    section: Environmental Requirements
+    baseline: The battery charger must operate from -20 C to +60 C at 5% to 95% RH non-condensing.
+    source_text_path: battery_charger_ambient_rating.source_text
+    source_page_path: battery_charger_ambient_rating.source_page
+    rules:
+      - {id: battery-charger-minimum, path: battery_charger_ambient_rating.stated_min_c, operator: maximum, expected: -20, unit: degC, required: true, severity: high}
+      - {id: battery-charger-maximum, path: battery_charger_ambient_rating.stated_max_c, operator: minimum, expected: 60, unit: degC, required: true, severity: high}
+      - {id: battery-charger-humidity, path: battery_charger_ambient_rating.stated_humidity_rating, operator: regex, expected: '(?is)(5.*95.*non.?condens|non.?condens.*5.*95)', required: true, severity: high}
+
+  - id: voltage_regulator_ambient_rating
+    name: Voltage regulator ambient rating
+    section: Environmental Requirements
+    baseline: The voltage regulator must operate from -40 C to +70 C.
+    source_text_path: voltage_regulator_ambient_rating.source_text
+    source_page_path: voltage_regulator_ambient_rating.source_page
+    rules:
+      - {id: voltage-regulator-minimum, path: voltage_regulator_ambient_rating.stated_min_c, operator: maximum, expected: -40, unit: degC, required: true, severity: high}
+      - {id: voltage-regulator-maximum, path: voltage_regulator_ambient_rating.stated_max_c, operator: minimum, expected: 70, unit: degC, required: true, severity: high}
+
+  - id: engine_governing_control_ambient_rating
+    name: Engine governing control ambient rating
+    section: Environmental Requirements
+    baseline: The engine governing control must operate from -40 C to +85 C at 0% to 90% RH.
+    source_text_path: engine_governing_control_ambient_rating.source_text
+    source_page_path: engine_governing_control_ambient_rating.source_page
+    rules:
+      - {id: governing-control-minimum, path: engine_governing_control_ambient_rating.stated_min_c, operator: maximum, expected: -40, unit: degC, required: true, severity: high}
+      - {id: governing-control-maximum, path: engine_governing_control_ambient_rating.stated_max_c, operator: minimum, expected: 85, unit: degC, required: true, severity: high}
+      - {id: governing-control-humidity, path: engine_governing_control_ambient_rating.stated_humidity_rating, operator: regex, expected: '(?is)(0.*90|90.*0).*%', required: true, severity: high}

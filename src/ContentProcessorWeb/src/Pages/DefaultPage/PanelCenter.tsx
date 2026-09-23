@@ -137,7 +137,7 @@ const PanelCenter: React.FC<PanelCenterProps> = ({ togglePanel }) => {
   const [claimComment, setClaimComment] = React.useState("");
   const [selectedTab, setSelectedTab] = React.useState<TabValue>("extracted-results");
   const [apiLoader, setApiLoader] = useState(false);
-  const status = ['extract', 'processing', 'map', 'evaluate'];
+  const status = ['extract', 'processing', 'map', 'evaluate', 'validate', 'save'];
 
   const store = useSelector((state: RootState) => ({
     processId: state.leftPanel.processId,
@@ -290,6 +290,20 @@ const PanelCenter: React.FC<PanelCenterProps> = ({ togglePanel }) => {
   ), [store.processStepsData, store.activeProcessId, styles.tabItemCotnent, apiLoader]);
 
   const Compliance = useCallback(() => {
+    if (status.includes(store.selectedItem.status as string)) {
+      return (
+        <div
+          role="tabpanel"
+          className={styles.processTabItemCotnent}
+          aria-labelledby="Compliance"
+        >
+          <p style={{ textAlign: 'center' }}>
+            Compliance assessment will appear after extraction and validation finish.
+          </p>
+        </div>
+      );
+    }
+
     const validationResult = store.contentData.validation_result;
     const comparisonData = store.contentData.extracted_comparison_data as
       | { items?: { Field?: string | null; Confidence?: string | null }[] }
@@ -316,7 +330,13 @@ const PanelCenter: React.FC<PanelCenterProps> = ({ togglePanel }) => {
         />
       </div>
     );
-  }, [store.contentData, styles.processTabItemCotnent, apiLoader, dispatch]);
+  }, [
+    store.contentData,
+    store.selectedItem.status,
+    styles.processTabItemCotnent,
+    apiLoader,
+    dispatch,
+  ]);
 
   const onTabSelect = (event: SelectTabEvent, data: SelectTabData) => {
     setSelectedTab(data.value);
@@ -406,7 +426,7 @@ const PanelCenter: React.FC<PanelCenterProps> = ({ togglePanel }) => {
         <div className={styles.tabContainer}>
           <TabList selectedValue={selectedTab} onTabSelect={onTabSelect} className="custom-test" >
             <Tab value="extracted-results" >Extracted Results</Tab>
-            {store.contentData.validation_result != null && (
+            {store.selectionType === 'document' && (
               <Tab value="compliance">Compliance</Tab>
             )}
             <Tab value="process-history">Process Steps</Tab>

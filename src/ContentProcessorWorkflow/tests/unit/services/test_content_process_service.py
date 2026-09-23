@@ -148,7 +148,7 @@ class TestPollStatus:
 
         asyncio.run(_run())
 
-    def test_timeout_returns_last_status(self):
+    def test_timeout_returns_explicit_timeout_and_last_status(self):
         async def _run():
             svc = _make_service()
             record = MagicMock()
@@ -159,7 +159,8 @@ class TestPollStatus:
             result = await svc.poll_status(
                 "p1", poll_interval_seconds=0.01, timeout_seconds=0.03
             )
-            assert result["status"] == "extract"
+            assert result["status"] == "Timeout"
+            assert result["last_status"] == "extract"
             assert result["terminal"] is True
 
         asyncio.run(_run())
