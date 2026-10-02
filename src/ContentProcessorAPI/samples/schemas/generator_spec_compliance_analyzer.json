@@ -1006,7 +1006,7 @@
             "string",
             "null"
           ],
-          "description": "Verbatim maximum ambient temperature rating for the generator system."
+          "description": "Verbatim evidence for every distinct primary maximum ambient temperature rating stated for the generator system. Include all conflicting statements and their surrounding qualification. Exclude explicitly conditional alternates or options from the primary-value list."
         },
         "source_page": {
           "type": [
@@ -1016,17 +1016,25 @@
           "description": "One-based PDF page containing source_text."
         },
         "stated_max_c": {
-          "description": "Maximum ambient temperature in degrees Celsius. Convert from Fahrenheit if needed.",
+          "description": "Authoritative primary maximum ambient temperature in degrees Celsius. Convert from Fahrenheit if needed. If multiple distinct primary ratings are stated and the document does not explicitly resolve which one governs, return null rather than selecting the largest, latest, or most favorable value.",
           "type": [
             "number",
             "null"
           ]
+        },
+        "observed_primary_values_c": {
+          "description": "All distinct primary maximum ambient temperature ratings stated for the generator system, converted to degrees Celsius. Preserve conflicting values. Exclude explicitly conditional alternates or options such as an alternate selected only during bid phase.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
         }
       },
       "required": [
         "source_text",
         "source_page",
-        "stated_max_c"
+        "stated_max_c",
+        "observed_primary_values_c"
       ]
     },
     "minimum_ambient_temperature": {

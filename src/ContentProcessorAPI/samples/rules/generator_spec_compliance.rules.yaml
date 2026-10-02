@@ -1,7 +1,7 @@
 dsl_version: 1
 rule_set_id: generator-spec-compliance-analyzer
 name: Generator Specification Compliance Analyzer
-version: 0.2.0
+version: 0.3.0
 status: active
 minimum_confidence: 0.6
 description: >
@@ -264,6 +264,7 @@ entities:
     source_text_path: maximum_ambient_temperature.source_text
     source_page_path: maximum_ambient_temperature.source_page
     rules:
+      - {id: environment-maximum-ambient-consistency, path: maximum_ambient_temperature.observed_primary_values_c, operator: consistent, required: true, severity: high}
       - {id: environment-maximum-ambient, path: maximum_ambient_temperature.stated_max_c, operator: minimum, expected: 40, unit: degC, required: true, severity: high}
 
   - id: minimum_ambient_temperature

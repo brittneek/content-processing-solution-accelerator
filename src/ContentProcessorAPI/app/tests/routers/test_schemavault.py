@@ -248,6 +248,10 @@ entities:
           - path: document_type
             operator: equals
             expected: invoice
+      - id: invoice-id-consistency
+        path: observed_invoice_ids
+        operator: consistent
+        required: true
 """
 
 

@@ -20,6 +20,7 @@ _SUPPORTED_OPERATORS = {
     "contains_all",
     "one_of",
     "regex",
+    "consistent",
 }
 
 
@@ -64,9 +65,7 @@ def validate_rules_yaml(raw: bytes) -> dict[str, Any]:
     return document
 
 
-def _validate_entity(
-    entity: Any, entity_index: int, errors: list[str]
-) -> None:
+def _validate_entity(entity: Any, entity_index: int, errors: list[str]) -> None:
     prefix = f"entities[{entity_index}]"
     if not isinstance(entity, dict):
         errors.append(f"{prefix} must be an object.")
@@ -76,9 +75,7 @@ def _validate_entity(
         if field not in entity:
             errors.append(f"{prefix} is missing '{field}'.")
     baseline = entity.get("baseline")
-    if baseline is not None and (
-        not isinstance(baseline, str) or not baseline.strip()
-    ):
+    if baseline is not None and (not isinstance(baseline, str) or not baseline.strip()):
         errors.append(f"{prefix}.baseline must be a non-empty string.")
     _validate_confidence(
         entity.get("minimum_confidence"),
@@ -101,9 +98,7 @@ def _validate_entity(
                 errors.append(f"{rule_prefix} is missing '{field}'.")
         operator = rule.get("operator")
         if operator is not None and operator not in _SUPPORTED_OPERATORS:
-            errors.append(
-                f"{rule_prefix}.operator '{operator}' is not supported."
-            )
+            errors.append(f"{rule_prefix}.operator '{operator}' is not supported.")
         conditions = rule.get("when", [])
         if not isinstance(conditions, list):
             errors.append(f"{rule_prefix}.when must be a list.")

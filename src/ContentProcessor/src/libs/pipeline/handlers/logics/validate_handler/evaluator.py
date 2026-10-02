@@ -338,7 +338,15 @@ class RuleEvaluator:
                 f"Could not evaluate '{rule.path}': {exc}",
             )
 
-        status = ValidationStatus.PASS if passed else ValidationStatus.FAIL
+        status = (
+            ValidationStatus.PASS
+            if passed
+            else (
+                ValidationStatus.ERROR
+                if rule.operator is RuleOperator.CONSISTENT
+                else ValidationStatus.FAIL
+            )
+        )
         message = rule.message or self._default_message(rule, actual, passed)
         return self._result(rule, status, actual, message)
 
@@ -431,6 +439,14 @@ class RuleEvaluator:
             if not isinstance(actual, str) or not isinstance(expected, str):
                 raise TypeError("regex requires string actual and expected values")
             return re.search(expected, actual) is not None
+        if operator is RuleOperator.CONSISTENT:
+            values = self._collection(actual, "actual")
+            distinct_values = {
+                self._comparison_key(value)
+                for value in values
+                if not self._is_missing(value)
+            }
+            return len(distinct_values) <= 1
 
         raise ValueError(f"Unsupported operator '{operator}'")
 
@@ -480,6 +496,23 @@ class RuleEvaluator:
                 for item in collection
             )
         return expected in collection
+
+    @staticmethod
+    def _comparison_key(value: Any) -> Any:
+        if isinstance(value, Mapping):
+            return tuple(
+                sorted(
+                    (key, RuleEvaluator._comparison_key(item))
+                    for key, item in value.items()
+                )
+            )
+        if isinstance(value, Collection) and not isinstance(
+            value, (str, bytes, bytearray)
+        ):
+            return tuple(RuleEvaluator._comparison_key(item) for item in value)
+        if isinstance(value, Real) and not isinstance(value, bool):
+            return round(float(value), 6)
+        return value
 
     @classmethod
     def _optional_value(
@@ -550,6 +583,15 @@ class RuleEvaluator:
                 f"{field_name} is provided."
                 if passed
                 else f"{field_name} was not provided."
+            )
+        if rule.operator is RuleOperator.CONSISTENT:
+            return (
+                f"{field_name} contains one consistent value."
+                if passed
+                else (
+                    f"Conflicting values were extracted for {field_name}: "
+                    f"{actual_value}. Manual review is required."
+                )
             )
 
         outcome = "satisfies" if passed else "does not satisfy"

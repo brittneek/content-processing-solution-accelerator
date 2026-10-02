@@ -45,6 +45,7 @@ class RuleOperator(StrEnum):
     CONTAINS_ALL = "contains_all"
     ONE_OF = "one_of"
     REGEX = "regex"
+    CONSISTENT = "consistent"
 
 
 class RuleCondition(BaseModel):

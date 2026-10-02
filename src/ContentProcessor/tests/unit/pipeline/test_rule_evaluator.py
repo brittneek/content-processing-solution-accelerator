@@ -118,6 +118,96 @@ def test_reports_required_missing_value(rule_set):
     )
 
 
+def test_conflicting_observed_values_require_manual_review():
+    rules = RuleSetDefinition.model_validate(
+        {
+            "dsl_version": 1,
+            "rule_set_id": "conflict-detection",
+            "name": "Conflict detection",
+            "version": "1.0.0",
+            "entities": [
+                {
+                    "id": "maximum_temperature",
+                    "name": "Maximum ambient temperature",
+                    "section": "Environment",
+                    "baseline": "The generator must be rated for at least 40 C.",
+                    "rules": [
+                        {
+                            "id": "maximum-temperature-consistency",
+                            "path": "maximum_temperature.observed_values_c",
+                            "operator": "consistent",
+                            "required": True,
+                            "severity": "high",
+                        },
+                        {
+                            "id": "maximum-temperature-minimum",
+                            "path": "maximum_temperature.stated_max_c",
+                            "operator": "minimum",
+                            "expected": 40,
+                            "required": True,
+                            "severity": "high",
+                            "unit": "degC",
+                        },
+                    ],
+                }
+            ],
+        }
+    )
+
+    result = RuleEvaluator().evaluate(
+        {
+            "maximum_temperature": {
+                "observed_values_c": [37.8, 40],
+                "stated_max_c": None,
+            }
+        },
+        rules,
+    )
+
+    entity = result.entities[0]
+    assert entity.status is ValidationStatus.ERROR
+    assert entity.compliance_status is ComplianceStatus.REVIEW_REQUIRED
+    assert result.summary.review_required == 1
+    assert entity.rule_results[0].status is ValidationStatus.ERROR
+    assert entity.rule_results[0].actual == [37.8, 40]
+    assert "Conflicting values" in entity.rule_results[0].message
+    assert "Manual review is required" in entity.justification
+
+
+def test_duplicate_observed_values_are_consistent():
+    rules = RuleSetDefinition.model_validate(
+        {
+            "dsl_version": 1,
+            "rule_set_id": "consistent-values",
+            "name": "Consistent values",
+            "version": "1.0.0",
+            "entities": [
+                {
+                    "id": "temperature",
+                    "name": "Temperature",
+                    "section": "Environment",
+                    "rules": [
+                        {
+                            "id": "temperature-consistency",
+                            "path": "temperature.observed_values",
+                            "operator": "consistent",
+                            "required": True,
+                        }
+                    ],
+                }
+            ],
+        }
+    )
+
+    result = RuleEvaluator().evaluate(
+        {"temperature": {"observed_values": [40, 40.0]}},
+        rules,
+    )
+
+    assert result.entities[0].status is ValidationStatus.PASS
+    assert result.entities[0].compliance_status is ComplianceStatus.COMPLIANT
+
+
 def test_boolean_rule_message_uses_reviewer_friendly_values():
     rules = RuleSetDefinition.model_validate(
         {
